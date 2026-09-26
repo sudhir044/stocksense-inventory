@@ -5,7 +5,18 @@ import {
     createUser,
     findUserByEmail,
     findUserById,
+    updateUserPassword,
 } from "./auth.repository.js";
+
+import {
+    createPasswordResetToken,
+    findLatestValidResetToken,
+    incrementOtpAttempts,
+    markResetTokenUsed,
+    invalidatePreviousTokens,
+} from "./passwordReset.repository.js";
+
+import { generateOTP } from "../../utils/otp.js";
 
 const generateToken = (user) => {
     return jwt.sign(
@@ -91,4 +102,131 @@ export const getCurrentUser = async (userId) => {
     }
 
     return user;
+};
+
+export const requestPasswordReset = async (email) => {
+    const user = await findUserByEmail(email);
+
+
+    if (!user) {
+        return {
+            message: "If the email exists, an OTP has been sent",
+        };
+    }
+
+    await invalidatePreviousTokens(user.id);
+
+    const otp = generateOTP();
+
+    const otpHash = await bcrypt.hash(otp, 10);
+
+    const expiresAt = new Date(
+        Date.now() + 10 * 60 * 1000
+    );
+
+    await createPasswordResetToken({
+        userId: user.id,
+        otpHash,
+        expiresAt,
+    });
+
+
+    console.log(`Password reset OTP for ${user.email}: ${otp}`);
+
+    return {
+        message: "If the email exists, an OTP has been sent",
+    };
+};
+
+export const verifyPasswordResetOTP = async ({
+    email,
+    otp,
+}) => {
+    const user = await findUserByEmail(email);
+
+    if (!user) {
+        throw new Error("Invalid OTP");
+    }
+
+    const resetToken = await findLatestValidResetToken(user.id);
+
+    if (!resetToken) {
+        throw new Error("OTP expired or invalid");
+    }
+
+    if (resetToken.attempts >= 5) {
+        throw new Error("Too many OTP attempts");
+    }
+
+    const isValid = await bcrypt.compare(
+        otp,
+        resetToken.otp_hash
+    );
+
+    if (!isValid) {
+        await incrementOtpAttempts(resetToken.id);
+
+        throw new Error("Invalid OTP");
+    }
+
+    return {
+        message: "OTP verified successfully",
+    };
+};
+
+export const resetPassword = async ({
+    email,
+    otp,
+    newPassword,
+}) => {
+    const user = await findUserByEmail(email);
+
+    if (!user) {
+        throw new Error("Invalid OTP");
+    }
+
+    const resetToken = await findLatestValidResetToken(user.id);
+
+    if (!resetToken) {
+        throw new Error("OTP expired or invalid");
+    }
+
+    if (resetToken.attempts >= 5) {
+        throw new Error("Too many OTP attempts");
+    }
+
+    const isValid = await bcrypt.compare(
+        otp,
+        resetToken.otp_hash
+    );
+
+    if (!isValid) {
+        await incrementOtpAttempts(resetToken.id);
+
+        throw new Error("Invalid OTP");
+    }
+
+    if (newPassword.length < 8) {
+        throw new Error(
+            "Password must be at least 8 characters"
+        );
+    }
+
+    const passwordHash = await bcrypt.hash(
+        newPassword,
+        12
+    );
+
+    await updateUserPassword(
+        user.id,
+        passwordHash
+    );
+
+    await markResetTokenUsed(
+        resetToken.id
+    );
+
+    return {
+        message: "Password reset successfully",
+    };
 };

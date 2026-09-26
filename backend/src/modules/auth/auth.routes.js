@@ -4,6 +4,9 @@ import {
     register,
     login,
     me,
+    forgotPassword,
+    verifyOTP,
+    resetPasswordController,
 } from "./auth.controller.js";
 
 import { authenticate } from "../../middleware/auth.middleware.js";
@@ -24,6 +27,21 @@ router.get(
         "warehouse_staff"
     ),
     me
+);
+
+router.post(
+    "/forgot-password",
+    forgotPassword
+);
+
+router.post(
+    "/verify-otp",
+    verifyOTP
+);
+
+router.post(
+    "/reset-password",
+    resetPasswordController
 );
 
 export default router;

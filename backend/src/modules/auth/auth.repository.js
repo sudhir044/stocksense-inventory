@@ -48,3 +48,18 @@ export const createUser = async ({
 
     return result.rows[0];
 };
+
+export const updateUserPassword = async (userId, passwordHash) => {
+    const result = await pool.query(
+        `
+        UPDATE users
+        SET password_hash = $1,
+            updated_at = NOW()
+        WHERE id = $2
+        RETURNING id, name, email, role, is_active
+        `,
+        [passwordHash, userId]
+    );
+
+    return result.rows[0];
+};
