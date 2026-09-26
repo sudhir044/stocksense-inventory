@@ -14,13 +14,15 @@ CREATE TABLE IF NOT EXISTS transfers (
     transfer_date TIMESTAMPTZ,
 
     status VARCHAR(20) NOT NULL DEFAULT 'draft'
-        CHECK (status IN (
-            'draft',
-            'waiting',
-            'ready',
-            'done',
-            'canceled'
-        )),
+        CHECK (
+            status IN (
+                'draft',
+                'waiting',
+                'ready',
+                'done',
+                'canceled'
+            )
+        ),
 
     created_by UUID
         REFERENCES users(id)
@@ -36,5 +38,7 @@ CREATE TABLE IF NOT EXISTS transfers (
 
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    CHECK (source_location_id <> destination_location_id)
+    CHECK (
+        source_location_id <> destination_location_id
+    )
 );
