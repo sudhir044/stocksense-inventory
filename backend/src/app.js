@@ -14,6 +14,8 @@ import deliveryRoutes from "./modules/deliveries/delivery.routes.js";
 import adjustmentRoutes
     from "./modules/adjustments/adjustment.routes.js";
 
+import ledgerRoutes from "./modules/ledger/ledger.routes.js";
+import dashboardRoutes from "./modules/dashboard/dashboard.routes.js";
 
 
 app.use(helmet());
@@ -39,5 +41,8 @@ app.use(
     "/api/adjustments",
     adjustmentRoutes
 );
+app.use("/api/ledger", ledgerRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+
 
 export default app;
