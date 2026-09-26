@@ -9,15 +9,7 @@ import signup from './pages/auth/signup';
 import dashboard from './pages/dashboard/dashboard';
 
 // Move History Page
-import moveHistory from './pages/moveHistory/moveHistory';
-
-// Products Page
-import products from './pages/products/products';
-import createProduct from './pages/products/createProduct';
-import productDetails from './pages/products/productDetails';
-
-// Profile Page
-import profile from './pages/profile/profile';
+import MoveHistory from './pages/moveHistory/moveHistory';
 
 function App() {
   return (
@@ -32,20 +24,7 @@ function App() {
         <Route path="/dashboard" element={<dashboard />} />
 
         {/* Move History Route */}
-        <Route path="/move-history" element={<moveHistory />} />
-
-        {/* Products Route */}
-        <Route path="/products" element={<products />} />
-
-        {/* Create Product Route */}
-        <Route path="/products/create" element={<createProduct />} />
-
-        {/* Product Details Route */}
-        <Route path="/products/:id" element={<productDetails />} />
-
-        {/* Profile Route */}
-        <Route path="/profile" element={<profile />} />
-
+        <Route path="/move-history" element={<MoveHistory />} />
       </Routes>
     </BrowserRouter>
   );
