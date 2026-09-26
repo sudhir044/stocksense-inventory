@@ -82,7 +82,7 @@ function App() {
 
         <Route path="/operations/transfers/details" element={<TransferDetails />} />
         
-=======
+
         {/* Settings Route */}
         <Route path="/settings" element={<Settings />} />
         <Route path="/settings/warehouses" element={<Warehouses />} />
