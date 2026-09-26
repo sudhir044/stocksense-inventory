@@ -80,6 +80,23 @@ export const findProductById = async (id) => {
     return result.rows[0];
 };
 
+export const findProductBySku = async (sku) => {
+    const result = await pool.query(
+        `
+        SELECT
+            p.*,
+            c.name AS category_name
+        FROM products p
+        LEFT JOIN categories c
+            ON p.category_id = c.id
+        WHERE p.sku = $1
+        `,
+        [sku]
+    );
+
+    return result.rows[0];
+};
+
 export const updateProduct = async (
     id,
     {

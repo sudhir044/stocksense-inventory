@@ -5,6 +5,7 @@ import morgan from "morgan";
 
 import authRoutes from "./modules/auth/auth.routes.js";
 import productRoutes from "./modules/products/product.routes.js";
+import categoryRoutes from "./modules/categories/category.routes.js";
 
 const app = express();
 
@@ -22,5 +23,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+
+app.use("/api/categories", categoryRoutes);
 
 export default app;
