@@ -2,43 +2,43 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 // Auth Pages
-import Login from './pages/auth/login';
-import Signup from './pages/auth/signup';
+import login from './pages/auth/login';
+import signup from './pages/auth/signup';
 
 // Dashboard Page
-import Dashboard from './pages/dashboard/dashboard';
+import dashboard from './pages/dashboard/dashboard';
 
 // Move History Page
-import MoveHistory from './pages/moveHistory/moveHistory';
+import moveHistory from './pages/moveHistory/moveHistory';
 
-import Adjustments from './pages/operations/adjustment/adjustments';
+import adjustments from './pages/operations/adjustment/adjustments';
 
-import AdjustmentsDetails from './pages/operations/adjustment/adjustmentsDetails'; 
+import adjustmentsDetails from './pages/operations/adjustment/adjustmentsDetails'; 
 
-import CreateAdjustment from './pages/operations/adjustment/createAdjustment';
+import createAdjustment from './pages/operations/adjustment/createAdjustment';
 
-import Deliveries from './pages/operations/deliveries/deliveries';
+import deliveries from './pages/operations/deliveries/deliveries';
 
-import CreateDelivery from './pages/operations/deliveries/createDelivery';
+import createDelivery from './pages/operations/deliveries/createDelivery';
 
-import DeliveryDetails from './pages/operations/deliveries/deliveryDetails';
+import deliveryDetails from './pages/operations/deliveries/deliveryDetails';
 
-import Receipts from './pages/operations/receipts/receipts';
+import receipts from './pages/operations/receipts/receipts';
 
-import ReceiptDetails from './pages/operations/receipts/receiptDetails';
+import receiptDetails from './pages/operations/receipts/receiptDetails';
 
-import CreateReceipt from './pages/operations/receipts/createReceipt';
+import createReceipt from './pages/operations/receipts/createReceipt';
 
-import Transfers from './pages/operations/transfers/transfers';
+import transfers from './pages/operations/transfers/transfers';
 
-import CreateTransfer from './pages/operations/transfers/createTransfer';
+import createTransfer from './pages/operations/transfers/createTransfer';
 
-import TransferDetails from './pages/operations/transfers/transferDetails';
+import transferDetails from './pages/operations/transfers/transferDetails';
 // Setting
-import Settings from './pages/settings/settings';
+import settings from './pages/settings/settings';
 
 // Stock
-import Stock from './pages/stock/stock';
+import stock from './pages/stock/stock';
 
 
 function App() {
@@ -46,47 +46,47 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* Auth Routes */}
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/" element={<login />} />
+        <Route path="/login" element={<login />} />
+        <Route path="/signup" element={<signup />} />
 
         {/* Dashboard Route */}
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard" element={<dashboard />} />
 
         {/* Move History Route */}
-        <Route path="/move-history" element={<MoveHistory />} />
+        <Route path="/move-history" element={<moveHistory />} />
 
-        <Route path="/operations/adjustment" element={<Adjustments />} />
+        <Route path="/operations/adjustment" element={<adjustments />} />
 
-        <Route path="/operations/adjustment/:id" element={<AdjustmentsDetails />} />
+        <Route path="/operations/adjustment/:id" element={<adjustmentsDetails />} />
 
-        <Route path="/operations/adjustment/create" element={<CreateAdjustment />} />
+        <Route path="/operations/adjustment/create" element={<createAdjustment />} />
 
-        <Route path="/operations/deliveries" element={<Deliveries />} />
+        <Route path="/operations/deliveries" element={<deliveries />} />
 
-        <Route path="/operations/deliveries/create" element={<CreateDelivery />} />
+        <Route path="/operations/deliveries/create" element={<createDelivery />} />
 
-        <Route path="/operations/deliveries/details" element={<DeliveryDetails />} />
+        <Route path="/operations/deliveries/details" element={<deliveryDetails />} />
 
-        <Route path="/operations/receipts" element={<Receipts />} />
+        <Route path="/operations/receipts" element={<receipts />} />
 
-        <Route path="/operations/receipts/details" element={<ReceiptDetails />} />
+        <Route path="/operations/receipts/details" element={<receiptDetails />} />
 
-        <Route path="/operations/receipts/create" element={<CreateReceipt />} />
+        <Route path="/operations/receipts/create" element={<createReceipt />} />
 
-        <Route path="/operations/transfers" element={<Transfers />} />
+        <Route path="/operations/transfers" element={<transfers />} />
 
-        <Route path="/operations/transfers/create" element={<CreateTransfer />} />
+        <Route path="/operations/transfers/create" element={<createTransfer />} />
 
-        <Route path="/operations/transfers/details" element={<TransferDetails />} />
+        <Route path="/operations/transfers/details" element={<transferDetails />} />
         
 =======
         {/* Settings Route */}
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings" element={<settings />} />
 
         {/* Stock Route */}
-        <Route path="/stock" element={<Stock />} />
- cfb473a27b694312636eb12c8c8fca3ca37c945e
+        <Route path="/stock" element={<stock />} />
+
       </Routes>
     </BrowserRouter>
   );
