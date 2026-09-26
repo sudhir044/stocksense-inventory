@@ -45,6 +45,11 @@ import Categories from './pages/settings/categories';
 // Stock
 import Stock from './pages/stock/stock';
 
+// Products
+import Products from './pages/products/products';
+import CreateProduct from './pages/products/createProduct';
+import ProductDetails from './pages/products/productDetails';
+
 
 function App() {
   return (
@@ -85,6 +90,11 @@ function App() {
 
         <Route path="/operations/transfers/details" element={<transferDetails />} />
         
+       
+       
+
+
+
 
         {/* Settings Route */}
         <Route path="/settings" element={<Settings />} />
@@ -96,6 +106,11 @@ function App() {
 
         {/* Stock Route */}
         <Route path="/stock" element={<Stock />} />
+
+        {/* Products Route */}
+        <Route path="/products" element={<Products />} />
+        <Route path="/products/create" element={<CreateProduct />} />
+        <Route path="/products/:id" element={<ProductDetails />} />
 
       </Routes>
     </BrowserRouter>
