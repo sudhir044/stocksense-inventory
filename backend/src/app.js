@@ -11,9 +11,9 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 app.get("/api/health", (req, res) => {
-    res.json({
+    res.status(200).json({
         success: true,
-        message: "StockSense API is running"
+        message: "StockSense API is running",
     });
 });
 
