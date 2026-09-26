@@ -11,6 +11,7 @@ import Dashboard from './pages/dashboard/dashboard';
 // Move History Page
 import MoveHistory from './pages/moveHistory/moveHistory';
 
+<<<<<<< HEAD
 import Adjustments from './pages/operations/adjustment/adjustments';
 
 import AdjustmentsDetails from './pages/operations/adjustment/adjustmentsDetails'; 
@@ -34,6 +35,14 @@ import Transfers from './pages/operations/transfers/transfers';
 import CreateTransfer from './pages/operations/transfers/createTransfer';
 
 import TransferDetails from './pages/operations/transfers/transferDetails';
+=======
+// Setting
+import Settings from './pages/settings/settings';
+
+// Stock
+import Stock from './pages/stock/stock';
+
+>>>>>>> cfb473a27b694312636eb12c8c8fca3ca37c945e
 
 function App() {
   return (
@@ -50,6 +59,7 @@ function App() {
         {/* Move History Route */}
         <Route path="/move-history" element={<MoveHistory />} />
 
+<<<<<<< HEAD
         <Route path="/operations/adjustment" element={<Adjustments />} />
 
         <Route path="/operations/adjustment/:id" element={<AdjustmentsDetails />} />
@@ -74,6 +84,14 @@ function App() {
 
         <Route path="/operations/transfers/details" element={<TransferDetails />} />
         
+=======
+        {/* Settings Route */}
+        <Route path="/settings" element={<Settings />} />
+
+        {/* Stock Route */}
+        <Route path="/stock" element={<Stock />} />
+
+>>>>>>> cfb473a27b694312636eb12c8c8fca3ca37c945e
       </Routes>
     </BrowserRouter>
   );
