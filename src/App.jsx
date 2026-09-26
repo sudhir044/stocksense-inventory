@@ -2,36 +2,50 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 // Auth Pages
-import Login from './pages/auth/login';
-import Signup from './pages/auth/signup';
+import login from './pages/auth/login';
+import signup from './pages/auth/signup';
 
 // Dashboard Page
-import Dashboard from './pages/dashboard/dashboard';
+import dashboard from './pages/dashboard/dashboard';
 
 // Move History Page
-import MoveHistory from './pages/moveHistory/moveHistory';
+import moveHistory from './pages/moveHistory/moveHistory';
 
 // Products Page
-import Products from './pages/products/products';
+import products from './pages/products/products';
+import createProduct from './pages/products/createProduct';
+import productDetails from './pages/products/productDetails';
+
+// Profile Page
+import profile from './pages/profile/profile';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         {/* Auth Routes */}
-        <Route path="/products" element={<Products />} />
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/" element={<login />} />
+        <Route path="/login" element={<login />} />
+        <Route path="/signup" element={<signup />} />
 
         {/* Dashboard Route */}
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard" element={<dashboard />} />
 
         {/* Move History Route */}
-        <Route path="/move-history" element={<MoveHistory />} />
+        <Route path="/move-history" element={<moveHistory />} />
 
         {/* Products Route */}
-        <Route path="/products" element={<Products />} />
+        <Route path="/products" element={<products />} />
+
+        {/* Create Product Route */}
+        <Route path="/products/create" element={<createProduct />} />
+
+        {/* Product Details Route */}
+        <Route path="/products/:id" element={<productDetails />} />
+
+        {/* Profile Route */}
+        <Route path="/profile" element={<profile />} />
+
       </Routes>
     </BrowserRouter>
   );
