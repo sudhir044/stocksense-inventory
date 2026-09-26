@@ -11,11 +11,15 @@ import categoryRoutes from "./modules/categories/category.routes.js";
 import stockRoutes from "./modules/stock/stock.routes.js";
 import receiptRoutes from "./modules/receipts/receipt.routes.js";
 import deliveryRoutes from "./modules/deliveries/delivery.routes.js";
+import transferRoutes from "./modules/transfers/transfer.routes.js";
 import adjustmentRoutes
     from "./modules/adjustments/adjustment.routes.js";
 
 import ledgerRoutes from "./modules/ledger/ledger.routes.js";
 import dashboardRoutes from "./modules/dashboard/dashboard.routes.js";
+
+import { notFound } from "./middleware/notFound.middleware.js";
+import { errorHandler } from "./middleware/error.middleware.js";
 
 
 app.use(helmet());
@@ -37,6 +41,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/stock", stockRoutes);
 app.use("/api/receipts", receiptRoutes);
 app.use("/api/deliveries", deliveryRoutes);
+app.use("/api/transfers", transferRoutes);
 app.use(
     "/api/adjustments",
     adjustmentRoutes
@@ -44,5 +49,7 @@ app.use(
 app.use("/api/ledger", ledgerRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;
