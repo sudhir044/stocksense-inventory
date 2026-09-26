@@ -8,12 +8,12 @@ CREATE TABLE IF NOT EXISTS adjustment_items (
     product_id UUID NOT NULL
         REFERENCES products(id),
 
-    system_quantity NUMERIC(12, 3) NOT NULL,
+    system_quantity NUMERIC(12,3) NOT NULL,
 
-    counted_quantity NUMERIC(12, 3) NOT NULL
+    counted_quantity NUMERIC(12,3) NOT NULL
         CHECK (counted_quantity >= 0),
 
-    difference NUMERIC(12, 3)
+    difference NUMERIC(12,3)
         GENERATED ALWAYS AS (
             counted_quantity - system_quantity
         ) STORED,

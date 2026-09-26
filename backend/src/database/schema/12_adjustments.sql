@@ -9,11 +9,13 @@ CREATE TABLE IF NOT EXISTS adjustments (
     reason TEXT,
 
     status VARCHAR(20) NOT NULL DEFAULT 'draft'
-        CHECK (status IN (
-            'draft',
-            'done',
-            'canceled'
-        )),
+        CHECK (
+            status IN (
+                'draft',
+                'done',
+                'canceled'
+            )
+        ),
 
     created_by UUID
         REFERENCES users(id)
