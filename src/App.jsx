@@ -11,7 +11,11 @@ import Dashboard from './pages/dashboard/dashboard';
 // Move History Page
 import MoveHistory from './pages/moveHistory/moveHistory';
 
-import Stock from './pages/stock/stock'; // match your exact casing/filename
+// Setting
+import Settings from './pages/settings/settings';
+
+// Stock
+import Stock from './pages/stock/stock';
 
 
 function App() {
@@ -29,8 +33,12 @@ function App() {
         {/* Move History Route */}
         <Route path="/move-history" element={<MoveHistory />} />
 
-        
+        {/* Settings Route */}
+        <Route path="/settings" element={<Settings />} />
+
+        {/* Stock Route */}
         <Route path="/stock" element={<Stock />} />
+
       </Routes>
     </BrowserRouter>
   );
