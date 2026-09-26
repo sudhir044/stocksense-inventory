@@ -9,10 +9,10 @@ CREATE TABLE IF NOT EXISTS stock (
         REFERENCES locations(id)
         ON DELETE CASCADE,
 
-    quantity NUMERIC(12, 3) NOT NULL DEFAULT 0
+    quantity NUMERIC(12,3) NOT NULL DEFAULT 0
         CHECK (quantity >= 0),
 
-    reserved_quantity NUMERIC(12, 3) NOT NULL DEFAULT 0
+    reserved_quantity NUMERIC(12,3) NOT NULL DEFAULT 0
         CHECK (reserved_quantity >= 0),
 
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

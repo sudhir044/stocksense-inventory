@@ -8,15 +8,17 @@ CREATE TABLE IF NOT EXISTS stock_ledger (
         REFERENCES locations(id),
 
     movement_type VARCHAR(30) NOT NULL
-        CHECK (movement_type IN (
-            'receipt',
-            'delivery',
-            'transfer_in',
-            'transfer_out',
-            'adjustment'
-        )),
+        CHECK (
+            movement_type IN (
+                'receipt',
+                'delivery',
+                'transfer_in',
+                'transfer_out',
+                'adjustment'
+            )
+        ),
 
-    quantity_change NUMERIC(12, 3) NOT NULL,
+    quantity_change NUMERIC(12,3) NOT NULL,
 
     reference_type VARCHAR(30) NOT NULL,
 
