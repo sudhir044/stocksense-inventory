@@ -3,6 +3,8 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 
+import authRoutes from "./modules/auth/auth.routes.js";
+
 const app = express();
 
 app.use(helmet());
@@ -16,5 +18,7 @@ app.get("/api/health", (req, res) => {
         message: "StockSense API is running",
     });
 });
+
+app.use("/api/auth", authRoutes);
 
 export default app;
