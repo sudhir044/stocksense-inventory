@@ -35,16 +35,13 @@ import createTransfer from './pages/operations/transfers/createTransfer';
 
 import transferDetails from './pages/operations/transfers/transferDetails';
 // Setting
-<<<<<<< HEAD
 import Settings from './pages/settings/settings';
 import Warehouses from './pages/settings/warehouses';
 import CreateWarehouse from './pages/settings/createWarehouse';
-=======
-import settings from './pages/settings/settings';
->>>>>>> 0621719c73bb8705c096f28c005d593ee4bf8124
+import Locations from './pages/settings/location';
 
 // Stock
-import stock from './pages/stock/stock';
+import Stock from './pages/stock/stock';
 
 
 function App() {
@@ -88,19 +85,13 @@ function App() {
         
 
         {/* Settings Route */}
-<<<<<<< HEAD
         <Route path="/settings" element={<Settings />} />
         <Route path="/settings/warehouses" element={<Warehouses />} />
         <Route path="/settings/warehouses/create" element={<CreateWarehouse />} />
+        <Route path="/settings/location" element={<Locations />} />
 
         {/* Stock Route */}
         <Route path="/stock" element={<Stock />} />
-=======
-        <Route path="/settings" element={<settings />} />
-
-        {/* Stock Route */}
-        <Route path="/stock" element={<stock />} />
->>>>>>> 0621719c73bb8705c096f28c005d593ee4bf8124
 
       </Routes>
     </BrowserRouter>
