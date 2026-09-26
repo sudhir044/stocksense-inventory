@@ -13,6 +13,8 @@ import MoveHistory from './pages/moveHistory/moveHistory';
 
 // Setting
 import Settings from './pages/settings/settings';
+import Warehouses from './pages/settings/warehouses';
+import CreateWarehouse from './pages/settings/createWarehouse';
 
 // Stock
 import Stock from './pages/stock/stock';
@@ -35,6 +37,8 @@ function App() {
 
         {/* Settings Route */}
         <Route path="/settings" element={<Settings />} />
+        <Route path="/settings/warehouses" element={<Warehouses />} />
+        <Route path="/settings/warehouses/create" element={<CreateWarehouse />} />
 
         {/* Stock Route */}
         <Route path="/stock" element={<Stock />} />
