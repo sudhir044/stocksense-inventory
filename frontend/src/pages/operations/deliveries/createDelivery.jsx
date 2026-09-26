@@ -1,30 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  ArrowLeft,
   Plus,
   Trash2,
   Save,
   Truck,
-  Building,
   Calendar,
-  Package,
-  Hash,
-  AlertCircle,
-  Warehouse,
+  Building,
+  ArrowLeft,
 } from 'lucide-react';
 import deliveryService from '../../../services/delivery.service';
 import productService from '../../../services/product.service';
 import stockService from '../../../services/stock.service';
+import { Button } from '../../../components/ui/Button';
+import { PageHeader } from '../../../components/ui/PageHeader';
+import { ErrorAlert } from '../../../components/ui/Feedback';
 
-const CreateDelivery = () => {
+export const CreateDelivery = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [products, setProducts] = useState([]);
   const [locations, setLocations] = useState([]);
 
-  // Delivery Form State
+  // Form State
   const [reference, setReference] = useState(`DEL-${Date.now().toString().slice(-6)}`);
   const [customerName, setCustomerName] = useState('');
   const [scheduledDate, setScheduledDate] = useState(new Date().toISOString().split('T')[0]);
@@ -115,12 +114,12 @@ const CreateDelivery = () => {
     setError(null);
 
     if (!sourceLocationId) {
-      setError('Please select a source location.');
+      setError('Please select a valid source warehouse location.');
       return;
     }
 
     if (!items.some((item) => item.productId)) {
-      setError('Please select at least one valid product.');
+      setError('Please add at least one valid product line.');
       return;
     }
 
@@ -151,73 +150,42 @@ const CreateDelivery = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 sm:p-6 lg:p-8">
-      {/* Top Header Navigation */}
-      <div className="flex items-center justify-between mb-6">
-        <button
-          type="button"
-          onClick={() => navigate('/operations/deliveries')}
-          className="inline-flex items-center text-sm font-medium text-slate-400 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Deliveries
-        </button>
-      </div>
+    <div className="space-y-6 max-w-5xl">
+      <PageHeader
+        title="Create Delivery Order"
+        subtitle="Schedule customer shipment and prepare outbound warehouse pick list."
+        breadcrumbs={[
+          { label: 'Operations' },
+          { label: 'Deliveries', path: '/operations/deliveries' },
+          { label: 'New Delivery' },
+        ]}
+        action={
+          <Link to="/operations/deliveries">
+            <Button variant="secondary" size="sm" icon={ArrowLeft}>
+              Back to Deliveries
+            </Button>
+          </Link>
+        }
+      />
 
-      <form onSubmit={handleSubmit}>
-        {/* Title and Form Action Buttons */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
-              Create Outgoing Delivery
-            </h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Dispatch goods from inventory warehouse to customer delivery address.
+      <ErrorAlert message={error} onDismiss={() => setError(null)} />
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Document Header Card */}
+        <div className="bg-white border border-slate-200 rounded-[8px] p-5 shadow-2xs">
+          <div className="pb-3 border-b border-slate-100 mb-4">
+            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Truck className="w-4 h-4 text-blue-600" />
+              Delivery Document Details
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Specify customer recipient, dispatch date, and fulfillment source.
             </p>
           </div>
 
-          <div className="flex items-center space-x-3">
-            <Link
-              to="/operations/deliveries"
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-lg border border-slate-700 transition-colors"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={loading}
-              className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors disabled:opacity-50"
-            >
-              {loading ? (
-                <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <Save className="w-4 h-4 mr-2" />
-              )}
-              Save Delivery Order
-            </button>
-          </div>
-        </div>
-
-        {/* Error Alert */}
-        {error && (
-          <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm flex items-center space-x-2">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {/* Delivery Details Card */}
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-6 shadow-lg mb-6">
-          <h2 className="text-lg font-bold text-white mb-4 flex items-center">
-            <Truck className="w-5 h-5 text-indigo-400 mr-2" />
-            Delivery Order Information
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Reference */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center">
-                <Hash className="w-3.5 h-3.5 mr-1 text-slate-400" />
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
                 Delivery Reference *
               </label>
               <input
@@ -225,14 +193,12 @@ const CreateDelivery = () => {
                 required
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 font-mono placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 text-sm font-mono bg-white border border-slate-200 rounded-[6px] text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
               />
             </div>
 
-            {/* Customer Name */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center">
-                <Building className="w-3.5 h-3.5 mr-1 text-slate-400" />
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
                 Customer Name *
               </label>
               <input
@@ -240,15 +206,13 @@ const CreateDelivery = () => {
                 required
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="e.g. Acme Corporation"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="e.g. Acme Corp / Retail Client"
+                className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-[6px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
               />
             </div>
 
-            {/* Scheduled Date */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center">
-                <Calendar className="w-3.5 h-3.5 mr-1 text-slate-400" />
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
                 Scheduled Date *
               </label>
               <input
@@ -256,21 +220,18 @@ const CreateDelivery = () => {
                 required
                 value={scheduledDate}
                 onChange={(e) => setScheduledDate(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-[6px] text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
               />
             </div>
 
-            {/* Source Location */}
-            <div className="md:col-span-2">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center">
-                <Warehouse className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                Source Stock Location *
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                Source Location *
               </label>
               <select
-                required
                 value={sourceLocationId}
                 onChange={(e) => setSourceLocationId(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-[6px] text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
               >
                 {locations.length > 0 ? (
                   locations.map((loc) => (
@@ -279,80 +240,76 @@ const CreateDelivery = () => {
                     </option>
                   ))
                 ) : (
-                  <option value="">No locations available.</option>
+                  <option value="">No locations available</option>
                 )}
               </select>
             </div>
           </div>
         </div>
 
-        {/* Line Items Table */}
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl shadow-lg overflow-hidden mb-6">
-          <div className="p-4 border-b border-slate-700/60 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-white flex items-center">
-              <Package className="w-5 h-5 text-indigo-400 mr-2" />
-              Delivery Line Items
-            </h2>
-            <button
+        {/* Line Items Card */}
+        <div className="bg-white border border-slate-200 rounded-[8px] overflow-hidden shadow-2xs">
+          <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-white">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">Line Items & Demand Quantities</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Select products to allocate and dispatch from stock.</p>
+            </div>
+            <Button
               type="button"
+              variant="secondary"
+              size="xs"
+              icon={Plus}
               onClick={handleAddItem}
-              className="inline-flex items-center px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 border border-indigo-500/30 text-xs font-semibold rounded-lg transition-colors"
             >
-              <Plus className="w-3.5 h-3.5 mr-1" />
-              Add Product Line
-            </button>
+              Add Item Row
+            </Button>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-slate-900/80 text-xs uppercase text-slate-400 border-b border-slate-700">
+            <table className="w-full text-left text-sm text-slate-700">
+              <thead className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
                 <tr>
-                  <th className="py-3.5 px-4 w-3/4">Product</th>
-                  <th className="py-3.5 px-4 text-center w-36">Dispatch Qty</th>
-                  <th className="py-3.5 px-4 text-center w-16">Action</th>
+                  <th className="py-2.5 px-4 w-12 text-center">#</th>
+                  <th className="py-2.5 px-4">Product Catalog Item</th>
+                  <th className="py-2.5 px-4 w-36 text-right">Quantity</th>
+                  <th className="py-2.5 px-4 w-20 text-center">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700/50">
+              <tbody className="divide-y divide-slate-100">
                 {items.map((item, index) => (
-                  <tr key={index} className="hover:bg-slate-700/30 transition-colors">
+                  <tr key={index} className="hover:bg-slate-50/50">
+                    <td className="py-3 px-4 text-center font-mono text-xs text-slate-400">
+                      {index + 1}
+                    </td>
                     <td className="py-3 px-4">
                       <select
-                        required
                         value={item.productId}
                         onChange={(e) => handleProductChange(index, e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                        className="w-full px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-[6px] text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                       >
-                        <option value="">Select a product</option>
                         {products.map((p) => (
                           <option key={p.id} value={p.id}>
-                            {p.name} ({p.sku})
+                            {p.name} (SKU: {p.sku}) — ${Number(p.cost_price || 0).toFixed(2)}
                           </option>
                         ))}
                       </select>
                     </td>
-
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3 px-4 text-right">
                       <input
                         type="number"
                         min="1"
-                        required
                         value={item.quantity}
                         onChange={(e) => handleQuantityChange(index, e.target.value)}
-                        className="w-full text-center bg-slate-900 border border-slate-700 rounded-lg py-1.5 text-sm font-mono text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-1.5 text-sm font-mono text-right bg-white border border-slate-200 rounded-[6px] text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                       />
                     </td>
-
                     <td className="py-3 px-4 text-center">
                       <button
                         type="button"
                         onClick={() => handleRemoveItem(index)}
                         disabled={items.length === 1}
-                        className={`p-1.5 rounded-lg transition-colors ${
-                          items.length === 1
-                            ? 'text-slate-600 cursor-not-allowed'
-                            : 'text-slate-400 hover:text-rose-400 hover:bg-slate-700/50'
-                        }`}
-                        title="Delete line"
+                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded disabled:opacity-30 transition-colors"
+                        title="Remove row"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -361,6 +318,28 @@ const CreateDelivery = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+            <span className="text-xs text-slate-500">
+              Total lines: <strong className="text-slate-900">{items.length}</strong>
+            </span>
+            <div className="flex items-center space-x-2.5">
+              <Link to="/operations/deliveries">
+                <Button variant="secondary" size="sm">
+                  Cancel
+                </Button>
+              </Link>
+              <Button
+                type="submit"
+                variant="primary"
+                size="sm"
+                icon={Save}
+                loading={loading}
+              >
+                Create Delivery Order
+              </Button>
+            </div>
           </div>
         </div>
       </form>

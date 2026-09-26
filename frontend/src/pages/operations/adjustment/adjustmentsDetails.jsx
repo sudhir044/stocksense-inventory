@@ -1,259 +1,164 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   Printer,
-  Download,
+  SlidersHorizontal,
   CheckCircle2,
-  Clock,
-  User,
-  Building,
   Calendar,
-  FileText,
-  AlertCircle,
-  Package,
-  TrendingDown,
-  TrendingUp,
+  Warehouse,
 } from 'lucide-react';
+import { Button } from '../../../components/ui/Button';
+import { Badge } from '../../../components/ui/Badge';
+import { PageHeader } from '../../../components/ui/PageHeader';
 
-const AdjustmentsDetails = () => {
+export const AdjustmentsDetails = () => {
   const navigate = useNavigate();
 
-  // Sample data for a specific adjustment record
-  const [adjustment] = useState({
-    id: 'ADJ-00053',
-    date: '2026-09-25 02:15 PM',
-    warehouse: 'Main Warehouse (WH-A)',
-    location: 'Aisle 3 - Shelf B',
-    reason: 'Damaged Goods',
-    user: 'Sarah Jenkins',
-    approver: 'David Miller (Warehouse Manager)',
-    status: 'Done',
-    notes:
-      'Items were damaged during forklift transfer near Bay 4. Scrapped units according to standard safety disposal policy.',
+  const [adjustment, setAdjustment] = useState({
+    id: 'ADJ-00912',
+    location: 'Main Warehouse / Staging Rack A',
+    reason: 'Annual Physical Cycle Count Discrepancy',
+    scheduledDate: '2026-09-26',
+    auditor: 'Alex Morgan',
+    status: 'ready',
+    createdDate: '2026-09-24 14:00 PM',
+    notes: 'Reconciled after physical barcode audit of aisle 4.',
     items: [
       {
         id: 1,
-        product: 'Noise Cancelling Headphones',
-        sku: 'HP-9011',
-        category: 'Electronics',
-        systemQty: 45,
-        countedQty: 43,
-        variance: -2,
-        unitCost: '$120.00',
-        totalImpact: '-$240.00',
+        product: 'USB-C Docking Station',
+        sku: 'DK-3310',
+        systemQty: 100,
+        countedQty: 96,
+        difference: -4,
       },
       {
         id: 2,
-        product: 'Ergonomic Vertical Mouse',
-        sku: 'MS-3310',
-        category: 'Peripherals',
-        systemQty: 10,
-        countedQty: 10,
-        variance: 0,
-        unitCost: '$45.00',
-        totalImpact: '$0.00',
+        product: 'Noise Cancelling Headphones',
+        sku: 'HP-9011',
+        systemQty: 40,
+        countedQty: 42,
+        difference: +2,
       },
     ],
   });
 
+  const handleApplyAdjustment = () => {
+    setAdjustment((prev) => ({
+      ...prev,
+      status: 'done',
+    }));
+  };
+
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 sm:p-6 lg:p-8">
-      {/* Top Navigation & Actions Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center text-sm font-medium text-slate-400 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Adjustments
-        </button>
-
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => window.print()}
-            className="inline-flex items-center px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg border border-slate-700 transition-colors"
-          >
-            <Printer className="w-4 h-4 mr-2 text-indigo-400" />
-            Print
-          </button>
-          <button className="inline-flex items-center px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg border border-slate-700 transition-colors">
-            <Download className="w-4 h-4 mr-2 text-indigo-400" />
-            Export PDF
-          </button>
-        </div>
-      </div>
-
-      {/* Main Header Card */}
-      <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-6 shadow-lg mb-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <div className="flex items-center space-x-3">
-              <h1 className="text-2xl font-bold font-mono text-indigo-400">
-                {adjustment.id}
-              </h1>
-              <span
-                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                  adjustment.status === 'Done'
-                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                    : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                }`}
+    <div className="space-y-6 max-w-5xl">
+      <PageHeader
+        title={`Stock Adjustment: ${adjustment.id}`}
+        subtitle="Physical inventory reconciliation audit sheet."
+        breadcrumbs={[
+          { label: 'Operations' },
+          { label: 'Adjustments', path: '/operations/adjustments' },
+          { label: adjustment.id },
+        ]}
+        action={
+          <div className="flex items-center space-x-2.5">
+            <Link to="/operations/adjustments">
+              <Button variant="secondary" size="sm" icon={ArrowLeft}>
+                Back
+              </Button>
+            </Link>
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={Printer}
+              onClick={() => window.print()}
+            >
+              Print Audit Sheet
+            </Button>
+            {adjustment.status !== 'done' && (
+              <Button
+                variant="primary"
+                size="sm"
+                icon={CheckCircle2}
+                onClick={handleApplyAdjustment}
               >
-                {adjustment.status === 'Done' ? (
-                  <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-                ) : (
-                  <Clock className="w-3.5 h-3.5 mr-1.5" />
-                )}
-                {adjustment.status}
-              </span>
-            </div>
-            <p className="text-sm text-slate-400 mt-1">
-              Recorded on {adjustment.date}
-            </p>
+                Validate Adjustment
+              </Button>
+            )}
           </div>
+        }
+      />
 
-          <div className="flex items-center space-x-2 bg-slate-900/60 border border-slate-700/60 px-4 py-2.5 rounded-lg">
-            <span className="text-xs text-slate-400">Reason Category:</span>
-            <span className="text-sm font-semibold text-slate-200">
-              {adjustment.reason}
-            </span>
+      {/* Metadata Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white border border-slate-200 rounded-[8px] p-4 shadow-2xs">
+          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Location & Bay</div>
+          <div className="text-sm font-bold text-slate-900">{adjustment.location}</div>
+          <div className="text-xs text-slate-500 mt-1">Auditor: {adjustment.auditor}</div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-[8px] p-4 shadow-2xs">
+          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Audit Reason</div>
+          <div className="text-sm font-bold text-slate-900">{adjustment.reason}</div>
+          <div className="text-xs text-slate-500 mt-1">Scheduled: {adjustment.scheduledDate}</div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-[8px] p-4 shadow-2xs">
+          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Adjustment Status</div>
+          <div className="mt-1">
+            <Badge variant={adjustment.status} size="md">
+              {adjustment.status}
+            </Badge>
           </div>
+          <div className="text-xs text-slate-400 mt-2">Recorded: {adjustment.createdDate}</div>
         </div>
       </div>
 
-      {/* Overview Metadata Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-4 shadow-md flex items-center space-x-3">
-          <div className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20">
-            <Building className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-xs text-slate-400">Warehouse</div>
-            <div className="text-sm font-semibold text-slate-200">
-              {adjustment.warehouse}
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-4 shadow-md flex items-center space-x-3">
-          <div className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20">
-            <Package className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-xs text-slate-400">Location Tag</div>
-            <div className="text-sm font-semibold text-slate-200">
-              {adjustment.location}
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-4 shadow-md flex items-center space-x-3">
-          <div className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20">
-            <User className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-xs text-slate-400">Created By</div>
-            <div className="text-sm font-semibold text-slate-200">
-              {adjustment.user}
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-4 shadow-md flex items-center space-x-3">
-          <div className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20">
-            <CheckCircle2 className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-xs text-slate-400">Approved By</div>
-            <div className="text-sm font-semibold text-slate-200">
-              {adjustment.approver}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Adjusted Items Table */}
-      <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl shadow-lg overflow-hidden mb-6">
-        <div className="p-4 border-b border-slate-700/60 flex items-center justify-between">
-          <h2 className="text-base font-bold text-white">Adjusted Line Items</h2>
-          <span className="text-xs text-slate-400">
-            {adjustment.items.length} items evaluated
-          </span>
+      {/* Line Items Table */}
+      <div className="bg-white border border-slate-200 rounded-[8px] overflow-hidden shadow-2xs">
+        <div className="p-4 border-b border-slate-200 bg-white">
+          <h3 className="text-sm font-bold text-slate-900">Counted Variance Lines</h3>
+          <p className="text-xs text-slate-500 mt-0.5">Variance values that will update stock on ledger validation.</p>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-900/80 text-xs uppercase text-slate-400 border-b border-slate-700">
+          <table className="w-full text-left text-sm text-slate-700">
+            <thead className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
               <tr>
-                <th className="py-3.5 px-4">Product Details</th>
-                <th className="py-3.5 px-4 text-center">System Quantity</th>
-                <th className="py-3.5 px-4 text-center">Counted Quantity</th>
-                <th className="py-3.5 px-4 text-center">Variance (Delta)</th>
-                <th className="py-3.5 px-4 text-right">Unit Cost</th>
-                <th className="py-3.5 px-4 text-right">Total Cost Impact</th>
+                <th className="py-2.5 px-4">Product Name</th>
+                <th className="py-2.5 px-4">SKU</th>
+                <th className="py-2.5 px-4 text-right">System Balance</th>
+                <th className="py-2.5 px-4 text-right">Counted Quantity</th>
+                <th className="py-2.5 px-4 text-right">Variance</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/50">
-              {adjustment.items.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-700/30 transition-colors">
-                  <td className="py-3.5 px-4">
-                    <div className="font-semibold text-slate-100">{item.product}</div>
-                    <div className="text-xs text-slate-500 font-mono">
-                      SKU: {item.sku} | {item.category}
-                    </div>
-                  </td>
-                  <td className="py-3.5 px-4 text-center font-mono text-slate-300">
-                    {item.systemQty}
-                  </td>
-                  <td className="py-3.5 px-4 text-center font-mono text-slate-100 font-semibold">
-                    {item.countedQty}
-                  </td>
-                  <td className="py-3.5 px-4 text-center font-mono font-bold">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs ${
-                        item.variance < 0
-                          ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                          : item.variance > 0
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          : 'bg-slate-700 text-slate-400'
-                      }`}
-                    >
-                      {item.variance < 0 ? (
-                        <TrendingDown className="w-3 h-3 mr-1" />
-                      ) : item.variance > 0 ? (
-                        <TrendingUp className="w-3 h-3 mr-1" />
-                      ) : null}
-                      {item.variance > 0 ? `+${item.variance}` : item.variance}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4 text-right font-mono text-slate-300">
-                    {item.unitCost}
-                  </td>
-                  <td
-                    className={`py-3.5 px-4 text-right font-mono font-bold ${
-                      item.variance < 0 ? 'text-rose-400' : 'text-emerald-400'
-                    }`}
-                  >
-                    {item.totalImpact}
-                  </td>
-                </tr>
-              ))}
+            <tbody className="divide-y divide-slate-100">
+              {adjustment.items.map((item) => {
+                const isPositive = item.difference > 0;
+                return (
+                  <tr key={item.id} className="hover:bg-slate-50/50">
+                    <td className="py-3 px-4 font-medium text-slate-900">{item.product}</td>
+                    <td className="py-3 px-4 font-mono text-xs text-slate-500">{item.sku}</td>
+                    <td className="py-3 px-4 font-mono text-right text-slate-600">{item.systemQty}</td>
+                    <td className="py-3 px-4 font-mono font-semibold text-right text-slate-900">{item.countedQty}</td>
+                    <td className="py-3 px-4 font-mono font-semibold text-right">
+                      <span className={isPositive ? 'text-emerald-700' : 'text-rose-700'}>
+                        {isPositive ? `+${item.difference}` : item.difference}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
-      </div>
 
-      {/* Notes & Remarks Card */}
-      <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-6 shadow-lg">
-        <div className="flex items-center space-x-2 text-indigo-400 mb-2">
-          <FileText className="w-4 h-4" />
-          <h3 className="text-sm font-bold uppercase tracking-wider">
-            Notes & Remarks
-          </h3>
-        </div>
-        <p className="text-sm text-slate-300 bg-slate-900/60 p-4 rounded-lg border border-slate-700/50 leading-relaxed">
-          {adjustment.notes}
-        </p>
+        {adjustment.notes && (
+          <div className="p-4 bg-slate-50 border-t border-slate-200 text-xs text-slate-600">
+            <strong className="text-slate-900">Auditor Notes:</strong> {adjustment.notes}
+          </div>
+        )}
       </div>
     </div>
   );

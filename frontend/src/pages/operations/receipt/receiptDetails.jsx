@@ -1,25 +1,21 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   Printer,
   PackageCheck,
   CheckCircle2,
-  Clock,
-  Building2,
-  Warehouse,
   Calendar,
+  Warehouse,
   FileText,
-  Download,
-  AlertCircle,
-  Hash,
-  UserCheck,
 } from 'lucide-react';
+import { Button } from '../../../components/ui/Button';
+import { Badge } from '../../../components/ui/Badge';
+import { PageHeader } from '../../../components/ui/PageHeader';
 
-const ReceiptDetails = () => {
+export const ReceiptDetails = () => {
   const navigate = useNavigate();
 
-  // Sample data for an incoming goods receipt order
   const [receipt, setReceipt] = useState({
     id: 'WH/IN/00104',
     sourcePO: 'PO-2026-089',
@@ -29,7 +25,7 @@ const ReceiptDetails = () => {
     receivingBay: 'Loading Dock 2',
     scheduledDate: '2026-09-26',
     receivedBy: 'Alex Morgan',
-    status: 'Ready', // Options: 'Draft', 'Waiting', 'Ready', 'Done', 'Cancelled'
+    status: 'ready',
     createdDate: '2026-09-22 11:15 AM',
     notes: 'Ensure all shipments undergo visual check for pallet seal integrity upon arrival.',
     items: [
@@ -56,202 +52,124 @@ const ReceiptDetails = () => {
     ],
   });
 
-  // Action Handler to Validate/Complete Stock Ingestion
   const handleValidateReceipt = () => {
     setReceipt((prev) => ({
       ...prev,
-      status: 'Done',
+      status: 'done',
     }));
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 sm:p-6 lg:p-8">
-      {/* Top Navigation & Action Buttons */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center text-sm font-medium text-slate-400 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Receipts
-        </button>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={() => window.print()}
-            className="inline-flex items-center px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg border border-slate-700 transition-colors"
-          >
-            <Printer className="w-4 h-4 mr-2 text-indigo-400" />
-            Print Receipt Slip
-          </button>
-
-          <button className="inline-flex items-center px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg border border-slate-700 transition-colors">
-            <Download className="w-4 h-4 mr-2 text-indigo-400" />
-            Download PDF
-          </button>
-
-          {receipt.status === 'Ready' && (
-            <button
-              onClick={handleValidateReceipt}
-              className="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors"
+    <div className="space-y-6 max-w-5xl">
+      <PageHeader
+        title={`Goods Receipt: ${receipt.id}`}
+        subtitle="Inbound shipment verification and receiving dock validation."
+        breadcrumbs={[
+          { label: 'Operations' },
+          { label: 'Receipts', path: '/operations/receipts' },
+          { label: receipt.id },
+        ]}
+        action={
+          <div className="flex items-center space-x-2.5">
+            <Link to="/operations/receipts">
+              <Button variant="secondary" size="sm" icon={ArrowLeft}>
+                Back
+              </Button>
+            </Link>
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={Printer}
+              onClick={() => window.print()}
             >
-              <CheckCircle2 className="w-4 h-4 mr-2" />
-              Validate & Receive Stock
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Main Header Status Card */}
-      <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-6 shadow-lg mb-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <div className="flex items-center space-x-3">
-              <h1 className="text-2xl font-bold font-mono text-indigo-400">
-                {receipt.id}
-              </h1>
-              <span
-                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                  receipt.status === 'Done'
-                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                    : receipt.status === 'Ready'
-                    ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30'
-                    : receipt.status === 'Waiting'
-                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                    : 'bg-slate-700 text-slate-300 border border-slate-600'
-                }`}
+              Print Receipt
+            </Button>
+            {receipt.status !== 'done' && (
+              <Button
+                variant="primary"
+                size="sm"
+                icon={PackageCheck}
+                onClick={handleValidateReceipt}
               >
-                {receipt.status === 'Done' && <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />}
-                {receipt.status === 'Ready' && <PackageCheck className="w-3.5 h-3.5 mr-1.5" />}
-                {receipt.status === 'Waiting' && <Clock className="w-3.5 h-3.5 mr-1.5" />}
-                {receipt.status}
-              </span>
-            </div>
-            <p className="text-sm text-slate-400 mt-1">
-              Source PO Reference: <span className="font-mono text-slate-200 font-semibold">{receipt.sourcePO}</span> | Created: {receipt.createdDate}
-            </p>
+                Validate Receipt
+              </Button>
+            )}
           </div>
+        }
+      />
 
-          <div className="flex items-center space-x-2 bg-slate-900/60 border border-slate-700/60 px-4 py-2.5 rounded-lg">
-            <Calendar className="w-4 h-4 text-indigo-400" />
-            <span className="text-xs text-slate-400">Expected Arrival Date:</span>
-            <span className="text-sm font-semibold text-slate-200">
-              {receipt.scheduledDate}
-            </span>
+      {/* Metadata Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white border border-slate-200 rounded-[8px] p-4 shadow-2xs">
+          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Vendor & PO</div>
+          <div className="text-sm font-bold text-slate-900">{receipt.supplier}</div>
+          <div className="text-xs text-slate-600 mt-1">Ref: {receipt.sourcePO}</div>
+          <div className="text-xs text-slate-400 mt-1">{receipt.contactPerson}</div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-[8px] p-4 shadow-2xs">
+          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Destination Bay</div>
+          <div className="text-sm font-bold text-slate-900">{receipt.destinationWarehouse}</div>
+          <div className="text-xs text-slate-600 mt-1">{receipt.receivingBay}</div>
+          <div className="text-xs text-slate-400 mt-1">Receiver: {receipt.receivedBy}</div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-[8px] p-4 shadow-2xs">
+          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Order Status</div>
+          <div className="mt-1">
+            <Badge variant={receipt.status} size="md">
+              {receipt.status}
+            </Badge>
           </div>
+          <div className="text-xs text-slate-400 mt-2">Scheduled: {receipt.scheduledDate}</div>
         </div>
       </div>
 
-      {/* Grid: Supplier & Warehouse Details */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        {/* Supplier Information */}
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-5 shadow-md">
-          <div className="flex items-center text-indigo-400 mb-3 font-semibold text-sm">
-            <Building2 className="w-4 h-4 mr-2" />
-            Supplier Details
-          </div>
-          <div className="space-y-1.5 text-sm">
-            <div className="font-bold text-white text-base">{receipt.supplier}</div>
-            <div className="text-slate-400 text-xs">{receipt.contactPerson}</div>
-          </div>
-        </div>
-
-        {/* Destination Warehouse */}
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-5 shadow-md">
-          <div className="flex items-center text-indigo-400 mb-3 font-semibold text-sm">
-            <Warehouse className="w-4 h-4 mr-2" />
-            Destination Location
-          </div>
-          <div className="space-y-1 text-sm">
-            <div className="font-semibold text-slate-200">{receipt.destinationWarehouse}</div>
-            <div className="text-xs text-slate-400">Dock / Bay: {receipt.receivingBay}</div>
-          </div>
-        </div>
-
-        {/* Receiving Staff */}
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-5 shadow-md">
-          <div className="flex items-center text-indigo-400 mb-3 font-semibold text-sm">
-            <UserCheck className="w-4 h-4 mr-2" />
-            Operations Inspector
-          </div>
-          <div className="space-y-2 text-xs">
-            <div>
-              <span className="text-slate-400">Assigned Officer:</span>{' '}
-              <span className="text-slate-200 font-semibold">{receipt.receivedBy}</span>
-            </div>
-            <div>
-              <span className="text-slate-400">Quality Check:</span>{' '}
-              <span className="text-emerald-400 font-semibold">Passed Initial Gate</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Items Table */}
-      <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl shadow-lg overflow-hidden mb-6">
-        <div className="p-4 border-b border-slate-700/60 flex items-center justify-between">
-          <h2 className="text-base font-bold text-white flex items-center">
-            <PackageCheck className="w-5 h-5 text-indigo-400 mr-2" />
-            Received Line Items
-          </h2>
-          <span className="text-xs text-slate-400">
-            {receipt.items.length} items listed
-          </span>
+      {/* Line Items Table */}
+      <div className="bg-white border border-slate-200 rounded-[8px] overflow-hidden shadow-2xs">
+        <div className="p-4 border-b border-slate-200 bg-white">
+          <h3 className="text-sm font-bold text-slate-900">Inbound Inventory Items</h3>
+          <p className="text-xs text-slate-500 mt-0.5">Verified quantities checked at receiving dock.</p>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-900/80 text-xs uppercase text-slate-400 border-b border-slate-700">
+          <table className="w-full text-left text-sm text-slate-700">
+            <thead className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
               <tr>
-                <th className="py-3.5 px-4">Product Details</th>
-                <th className="py-3.5 px-4 text-center">Ordered Qty</th>
-                <th className="py-3.5 px-4 text-center">Received Qty</th>
-                <th className="py-3.5 px-4 text-center">Inspection Status</th>
-                <th className="py-3.5 px-4 text-right">Unit Price</th>
+                <th className="py-2.5 px-4">Product Name</th>
+                <th className="py-2.5 px-4">SKU</th>
+                <th className="py-2.5 px-4">Category</th>
+                <th className="py-2.5 px-4 text-right">Ordered Qty</th>
+                <th className="py-2.5 px-4 text-right">Received Qty</th>
+                <th className="py-2.5 px-4 text-right">Unit Cost</th>
+                <th className="py-2.5 px-4 text-center">QC Check</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/50">
+            <tbody className="divide-y divide-slate-100">
               {receipt.items.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-700/30 transition-colors">
-                  <td className="py-3.5 px-4">
-                    <div className="font-semibold text-slate-100">{item.product}</div>
-                    <div className="text-xs text-slate-500 font-mono">
-                      SKU: {item.sku} | {item.category}
-                    </div>
-                  </td>
-                  <td className="py-3.5 px-4 text-center font-mono font-bold text-white">
-                    {item.orderedQty} pcs
-                  </td>
-                  <td className="py-3.5 px-4 text-center font-mono text-emerald-400 font-semibold">
-                    {item.receivedQty} pcs
-                  </td>
-                  <td className="py-3.5 px-4 text-center">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      QC Verified
+                <tr key={item.id} className="hover:bg-slate-50/50">
+                  <td className="py-3 px-4 font-medium text-slate-900">{item.product}</td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">{item.sku}</td>
+                  <td className="py-3 px-4 text-xs text-slate-600">{item.category}</td>
+                  <td className="py-3 px-4 font-mono text-right text-slate-600">{item.orderedQty}</td>
+                  <td className="py-3 px-4 font-mono font-semibold text-right text-blue-600">{item.receivedQty}</td>
+                  <td className="py-3 px-4 font-mono text-right text-slate-600">{item.unitCost}</td>
+                  <td className="py-3 px-4 text-center">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      Passed
                     </span>
-                  </td>
-                  <td className="py-3.5 px-4 text-right font-mono text-slate-300">
-                    {item.unitCost}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
 
-      {/* Special Instructions & Notes */}
-      <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-6 shadow-lg">
-        <div className="flex items-center space-x-2 text-indigo-400 mb-2">
-          <FileText className="w-4 h-4" />
-          <h3 className="text-sm font-bold uppercase tracking-wider">
-            Receiving Notes & Quality Remarks
-          </h3>
-        </div>
-        <p className="text-sm text-slate-300 bg-slate-900/60 p-4 rounded-lg border border-slate-700/50 leading-relaxed">
-          {receipt.notes}
-        </p>
+        {receipt.notes && (
+          <div className="p-4 bg-slate-50 border-t border-slate-200 text-xs text-slate-600">
+            <strong className="text-slate-900">Dock Notes:</strong> {receipt.notes}
+          </div>
+        )}
       </div>
     </div>
   );

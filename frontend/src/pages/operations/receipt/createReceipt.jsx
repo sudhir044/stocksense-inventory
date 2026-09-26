@@ -6,18 +6,18 @@ import {
   Trash2,
   Save,
   PackageCheck,
-  Building2,
-  Warehouse,
-  Calendar,
-  Package,
-  Hash,
-  AlertCircle,
+  FileText,
 } from 'lucide-react';
 import receiptService from '../../../services/receipt.service';
 import productService from '../../../services/product.service';
 import stockService from '../../../services/stock.service';
+import { Button } from '../../../components/ui/Button';
+import { Card } from '../../../components/ui/Card';
+import { Input, Select } from '../../../components/ui/FormControls';
+import { PageHeader } from '../../../components/ui/PageHeader';
+import { ErrorAlert } from '../../../components/ui/Feedback';
 
-const CreateReceipt = () => {
+export const CreateReceipt = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -48,7 +48,6 @@ const CreateReceipt = () => {
         ]);
         setProducts(prodList || []);
 
-        // Extract unique locations from stock records
         const locMap = new Map();
         (stockList || []).forEach((s) => {
           if (s.location_id && !locMap.has(s.location_id)) {
@@ -76,7 +75,7 @@ const CreateReceipt = () => {
           ]);
         }
       } catch (err) {
-        console.error('Failed to load products or locations:', err);
+        console.error('Failed to load dependencies:', err);
       }
     };
     loadData();
@@ -127,7 +126,7 @@ const CreateReceipt = () => {
     setError(null);
 
     if (!destinationLocationId) {
-      setError('Please select a destination location.');
+      setError('Please select a destination stock location.');
       return;
     }
 
@@ -164,180 +163,121 @@ const CreateReceipt = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 sm:p-6 lg:p-8">
-      {/* Top Header Navigation */}
-      <div className="flex items-center justify-between mb-6">
-        <button
-          type="button"
-          onClick={() => navigate('/operations/receipts')}
-          className="inline-flex items-center text-sm font-medium text-slate-400 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Receipts
-        </button>
-      </div>
+    <div className="max-w-4xl space-y-6">
+      <PageHeader
+        title="Create Goods Receipt"
+        subtitle="Log incoming purchase order delivery from vendor."
+        breadcrumbs={[
+          { label: 'Operations' },
+          { label: 'Receipts', to: '/operations/receipts' },
+          { label: 'New Receipt' },
+        ]}
+        action={
+          <Link to="/operations/receipts">
+            <Button variant="secondary" size="sm" icon={ArrowLeft}>
+              Back to Receipts
+            </Button>
+          </Link>
+        }
+      />
 
-      <form onSubmit={handleSubmit}>
-        {/* Title and Form Action Buttons */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
-              Create Goods Receipt
-            </h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Record a new incoming shipment order from supplier purchase orders.
-            </p>
+      <ErrorAlert message={error} />
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Document Header Card */}
+        <Card>
+          <div className="flex items-center space-x-2 pb-3 border-b border-slate-100 mb-4 text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <FileText className="w-4 h-4 text-blue-600" />
+            <span>Document Information</span>
           </div>
 
-          <div className="flex items-center space-x-3">
-            <Link
-              to="/operations/receipts"
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-lg border border-slate-700 transition-colors"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={loading}
-              className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors disabled:opacity-50"
-            >
-              {loading ? (
-                <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <Save className="w-4 h-4 mr-2" />
-              )}
-              Save Receipt Order
-            </button>
-          </div>
-        </div>
-
-        {/* Error Alert */}
-        {error && (
-          <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm flex items-center space-x-2">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {/* Incoming Receipt Details */}
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-6 shadow-lg mb-6">
-          <h2 className="text-lg font-bold text-white mb-4 flex items-center">
-            <PackageCheck className="w-5 h-5 text-indigo-400 mr-2" />
-            Receipt Information
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Reference */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center">
-                <Hash className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                Receipt Reference *
-              </label>
-              <input
-                type="text"
+              <Input
+                label="Receipt Reference"
                 required
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 font-mono placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="REC-XXXXXX"
+                className="font-mono text-xs"
               />
             </div>
 
-            {/* Supplier Name */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center">
-                <Building2 className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                Supplier Name *
-              </label>
-              <input
-                type="text"
+              <Input
+                label="Supplier / Vendor"
                 required
                 value={supplierName}
                 onChange={(e) => setSupplierName(e.target.value)}
-                placeholder="e.g. Apex Industrial Supplies"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="e.g. Apex Industrial Manufacturing"
               />
             </div>
 
-            {/* Expected Arrival Date */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center">
-                <Calendar className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                Scheduled Date *
-              </label>
-              <input
+              <Input
+                label="Expected Delivery Date"
                 type="date"
                 required
                 value={scheduledDate}
                 onChange={(e) => setScheduledDate(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
-            {/* Destination Location */}
-            <div className="md:col-span-2">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center">
-                <Warehouse className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                Destination Location *
-              </label>
-              <select
+            <div>
+              <Select
+                label="Destination Location"
                 required
                 value={destinationLocationId}
                 onChange={(e) => setDestinationLocationId(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
               >
-                {locations.length > 0 ? (
-                  locations.map((loc) => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.warehouse ? `${loc.warehouse} — ` : ''}{loc.name} ({loc.code})
-                    </option>
-                  ))
-                ) : (
-                  <option value="">No locations detected. Create stock or warehouse locations first.</option>
-                )}
-              </select>
+                {locations.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.warehouse ? `${loc.warehouse} — ` : ''}{loc.name} ({loc.code})
+                  </option>
+                ))}
+              </Select>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Line Items Table */}
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl shadow-lg overflow-hidden mb-6">
-          <div className="p-4 border-b border-slate-700/60 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-white flex items-center">
-              <Package className="w-5 h-5 text-indigo-400 mr-2" />
-              Expected Stock Items
-            </h2>
-            <button
+        {/* Expected Line Items Table */}
+        <div className="bg-white border border-slate-200 rounded-[8px] overflow-hidden shadow-2xs">
+          <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              Receiving Product Lines
+            </span>
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
+              icon={Plus}
               onClick={handleAddItem}
-              className="inline-flex items-center px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 border border-indigo-500/30 text-xs font-semibold rounded-lg transition-colors"
             >
-              <Plus className="w-3.5 h-3.5 mr-1" />
-              Add Product Line
-            </button>
+              Add Line
+            </Button>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-slate-900/80 text-xs uppercase text-slate-400 border-b border-slate-700">
+            <table className="w-full text-left text-sm text-slate-700">
+              <thead className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
                 <tr>
-                  <th className="py-3.5 px-4 w-1/2">Product</th>
-                  <th className="py-3.5 px-4 text-center w-36">Quantity</th>
-                  <th className="py-3.5 px-4 text-center w-36">Unit Cost ($)</th>
-                  <th className="py-3.5 px-4 text-center w-16">Action</th>
+                  <th className="py-2.5 px-4 w-1/2">Product</th>
+                  <th className="py-2.5 px-4 text-center w-36">Quantity</th>
+                  <th className="py-2.5 px-4 text-center w-36">Unit Cost ($)</th>
+                  <th className="py-2.5 px-4 text-center w-16">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700/50">
+              <tbody className="divide-y divide-slate-100">
                 {items.map((item, index) => (
-                  <tr key={index} className="hover:bg-slate-700/30 transition-colors">
-                    {/* Product Selection */}
-                    <td className="py-3 px-4">
+                  <tr key={index} className="hover:bg-slate-50/50">
+                    <td className="py-2 px-4">
                       <select
                         required
                         value={item.productId}
                         onChange={(e) => handleProductChange(index, e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                        className="w-full bg-white border border-slate-300 rounded-[6px] px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 cursor-pointer"
                       >
-                        <option value="">Select a product</option>
+                        <option value="">Select a product...</option>
                         {products.map((p) => (
                           <option key={p.id} value={p.id}>
                             {p.name} ({p.sku})
@@ -346,42 +286,35 @@ const CreateReceipt = () => {
                       </select>
                     </td>
 
-                    {/* Quantity Input */}
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-2 px-4 text-center">
                       <input
                         type="number"
                         min="1"
                         required
                         value={item.quantity}
                         onChange={(e) => handleQuantityChange(index, e.target.value)}
-                        className="w-full text-center bg-slate-900 border border-slate-700 rounded-lg py-1.5 text-sm font-mono text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-24 text-center bg-white border border-slate-300 rounded-[6px] py-1 text-xs font-mono text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 mx-auto block"
                       />
                     </td>
 
-                    {/* Unit Cost */}
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-2 px-4 text-center">
                       <input
                         type="number"
                         min="0"
                         step="0.01"
                         value={item.unitCost}
                         onChange={(e) => handleCostChange(index, e.target.value)}
-                        className="w-full text-center bg-slate-900 border border-slate-700 rounded-lg py-1.5 text-sm font-mono text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-24 text-center bg-white border border-slate-300 rounded-[6px] py-1 text-xs font-mono text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 mx-auto block"
                       />
                     </td>
 
-                    {/* Delete Action */}
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-2 px-4 text-center">
                       <button
                         type="button"
                         onClick={() => handleRemoveItem(index)}
                         disabled={items.length === 1}
-                        className={`p-1.5 rounded-lg transition-colors ${
-                          items.length === 1
-                            ? 'text-slate-600 cursor-not-allowed'
-                            : 'text-slate-400 hover:text-rose-400 hover:bg-slate-700/50'
-                        }`}
-                        title="Delete line"
+                        className="p-1 text-slate-400 hover:text-rose-600 rounded-[4px] disabled:opacity-30 cursor-pointer"
+                        title="Remove line"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -391,6 +324,24 @@ const CreateReceipt = () => {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Action Controls */}
+        <div className="flex items-center justify-end space-x-3 pt-2">
+          <Link to="/operations/receipts">
+            <Button variant="secondary" size="md">
+              Cancel
+            </Button>
+          </Link>
+          <Button
+            type="submit"
+            variant="primary"
+            size="md"
+            icon={Save}
+            loading={loading}
+          >
+            Save Receipt Order
+          </Button>
         </div>
       </form>
     </div>

@@ -4,19 +4,18 @@ import {
   Boxes,
   Search,
   Filter,
-  AlertTriangle,
-  Download,
   Plus,
-  Layers,
-  Building2,
-  DollarSign,
   RefreshCw,
-  AlertCircle,
-  ArrowLeft,
+  Building2,
+  Package,
 } from 'lucide-react';
 import stockService from '../../services/stock.service';
+import { Button } from '../../components/ui/Button';
+import { Badge } from '../../components/ui/Badge';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { ErrorAlert, EmptyState, LoadingState } from '../../components/ui/Feedback';
 
-const Stock = () => {
+export const Stock = () => {
   const [stockItems, setStockItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -42,7 +41,6 @@ const Stock = () => {
     fetchStock();
   }, []);
 
-  // Compute status
   const getItemStatus = (item) => {
     const qty = Number(item.quantity);
     if (qty <= 0) return 'Out of Stock';
@@ -50,18 +48,15 @@ const Stock = () => {
     return 'In Stock';
   };
 
-  // Metrics
-  const uniqueSkus = new Set(stockItems.map((item) => item.product_id)).size;
   const totalOnHand = stockItems.reduce((acc, item) => acc + Number(item.quantity || 0), 0);
   const totalReserved = stockItems.reduce((acc, item) => acc + Number(item.reserved_quantity || 0), 0);
-  const criticalItems = stockItems.filter((item) => Number(item.quantity) <= 10).length;
+  const totalAvailable = stockItems.reduce((acc, item) => acc + Number(item.free_to_use || 0), 0);
+  const lowStockCount = stockItems.filter((item) => Number(item.quantity) <= 10).length;
 
-  // Warehouses list for filter
   const warehouses = Array.from(
     new Set(stockItems.map((item) => item.warehouse_name).filter(Boolean))
   );
 
-  // Filter items
   const filteredItems = stockItems.filter((item) => {
     const term = searchTerm.toLowerCase();
     const matchesSearch =
@@ -81,262 +76,197 @@ const Stock = () => {
   });
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 sm:p-6 lg:p-8">
-      {/* Page Title & Actions */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div className="flex items-center space-x-3">
-          <Link
-            to="/dashboard"
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-            title="Back to Dashboard"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
-              Stock Inventory
-            </h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Real-time on-hand quantities, availability, and inventory allocations across warehouses.
-            </p>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <PageHeader
+        title="Stock Balances"
+        subtitle="Real-time multi-location inventory levels, allocations, and availability."
+        action={
+          <div className="flex items-center space-x-2.5">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={RefreshCw}
+              loading={loading}
+              onClick={fetchStock}
+            >
+              Refresh
+            </Button>
+            <Link to="/operations/adjustments/create">
+              <Button variant="primary" size="sm" icon={Plus}>
+                New Adjustment
+              </Button>
+            </Link>
           </div>
+        }
+      />
+
+      <ErrorAlert message={error} onRetry={fetchStock} />
+
+      {/* Metric Summary Ribbon - Clean, compact enterprise stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-white border border-slate-200 rounded-[6px] p-3 shadow-2xs">
+          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            Total Locations
+          </span>
+          <span className="text-xl font-bold font-mono text-slate-900 mt-0.5 block">
+            {loading ? '—' : stockItems.length}
+          </span>
         </div>
 
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={fetchStock}
-            disabled={loading}
-            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
-            title="Refresh Stock"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-indigo-400' : ''}`} />
-          </button>
-          <Link
-            to="/operations/adjustments/create"
-            className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Stock Adjustment
-          </Link>
-        </div>
-      </div>
-
-      {/* Error Alert */}
-      {error && (
-        <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-          <button onClick={fetchStock} className="underline font-semibold hover:text-rose-300">
-            Retry
-          </button>
-        </div>
-      )}
-
-      {/* KPI Metric Summary Badges */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-5 shadow-lg flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Total SKU Locations
-            </div>
-            <div className="text-2xl font-bold text-white mt-1">
-              {loading ? '...' : stockItems.length}
-            </div>
-          </div>
-          <div className="p-3 bg-indigo-500/10 rounded-lg text-indigo-400 border border-indigo-500/20">
-            <Boxes className="w-6 h-6" />
-          </div>
+        <div className="bg-white border border-slate-200 rounded-[6px] p-3 shadow-2xs">
+          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            Total On-Hand
+          </span>
+          <span className="text-xl font-bold font-mono text-slate-900 mt-0.5 block">
+            {loading ? '—' : Number(totalOnHand).toLocaleString()}
+          </span>
         </div>
 
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-5 shadow-lg flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Total On-Hand Units
-            </div>
-            <div className="text-2xl font-bold text-emerald-400 mt-1">
-              {loading ? '...' : `${totalOnHand} units`}
-            </div>
-          </div>
-          <div className="p-3 bg-emerald-500/10 rounded-lg text-emerald-400 border border-emerald-500/20">
-            <Layers className="w-6 h-6" />
-          </div>
+        <div className="bg-white border border-slate-200 rounded-[6px] p-3 shadow-2xs">
+          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            Total Reserved
+          </span>
+          <span className="text-xl font-bold font-mono text-slate-600 mt-0.5 block">
+            {loading ? '—' : Number(totalReserved).toLocaleString()}
+          </span>
         </div>
 
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-5 shadow-lg flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Reserved Units
-            </div>
-            <div className="text-2xl font-bold text-blue-400 mt-1">
-              {loading ? '...' : `${totalReserved} units`}
-            </div>
-          </div>
-          <div className="p-3 bg-blue-500/10 rounded-lg text-blue-400 border border-blue-500/20">
-            <Building2 className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-5 shadow-lg flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Critical / Low Stock
-            </div>
-            <div className="text-2xl font-bold text-amber-400 mt-1">
-              {loading ? '...' : `${criticalItems} locations`}
-            </div>
-          </div>
-          <div className="p-3 bg-amber-500/10 rounded-lg text-amber-400 border border-amber-500/20">
-            <AlertTriangle className="w-6 h-6" />
-          </div>
+        <div className="bg-white border border-slate-200 rounded-[6px] p-3 shadow-2xs">
+          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            Available to Promise
+          </span>
+          <span className="text-xl font-bold font-mono text-blue-600 mt-0.5 block">
+            {loading ? '—' : Number(totalAvailable).toLocaleString()}
+          </span>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-4 mb-6 shadow-lg flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full md:w-96">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+      <div className="bg-white border border-slate-200 rounded-[8px] p-3 flex flex-col md:flex-row gap-3 items-center justify-between shadow-2xs">
+        <div className="relative w-full md:w-80">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search by product name, SKU, or location..."
+            placeholder="Filter by product, SKU, location..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full bg-white border border-slate-300 rounded-[6px] pl-9 pr-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          {/* Warehouse Selector */}
-          <div className="flex items-center space-x-2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5">
-            <Building2 className="w-4 h-4 text-slate-400" />
-            <select
-              value={warehouseFilter}
-              onChange={(e) => setWarehouseFilter(e.target.value)}
-              className="bg-transparent text-sm text-slate-200 focus:outline-none cursor-pointer"
-            >
-              <option value="ALL" className="bg-slate-900">
-                All Warehouses
+        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          <select
+            value={warehouseFilter}
+            onChange={(e) => setWarehouseFilter(e.target.value)}
+            className="bg-white border border-slate-300 rounded-[6px] px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 cursor-pointer"
+          >
+            <option value="ALL">All Warehouses</option>
+            {warehouses.map((wh) => (
+              <option key={wh} value={wh}>
+                {wh}
               </option>
-              {warehouses.map((wh) => (
-                <option key={wh} value={wh} className="bg-slate-900">
-                  {wh}
-                </option>
-              ))}
-            </select>
-          </div>
+            ))}
+          </select>
 
-          {/* Status Selector */}
-          <div className="flex items-center space-x-2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5">
-            <Filter className="w-4 h-4 text-slate-400" />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-transparent text-sm text-slate-200 focus:outline-none cursor-pointer"
-            >
-              <option value="ALL" className="bg-slate-900">
-                All Statuses
-              </option>
-              <option value="In Stock" className="bg-slate-900">
-                In Stock
-              </option>
-              <option value="Low Stock" className="bg-slate-900">
-                Low Stock
-              </option>
-              <option value="Out of Stock" className="bg-slate-900">
-                Out of Stock
-              </option>
-            </select>
-          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="bg-white border border-slate-300 rounded-[6px] px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 cursor-pointer"
+          >
+            <option value="ALL">All Statuses</option>
+            <option value="In Stock">In Stock</option>
+            <option value="Low Stock">Low Stock</option>
+            <option value="Out of Stock">Out of Stock</option>
+          </select>
         </div>
       </div>
 
       {/* Stock Table */}
-      <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-[8px] overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-900/80 text-xs uppercase text-slate-400 border-b border-slate-700">
+          <table className="w-full text-left text-sm text-slate-700">
+            <thead className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
               <tr>
-                <th className="py-3.5 px-4">Product & SKU</th>
-                <th className="py-3.5 px-4">Warehouse & Location</th>
-                <th className="py-3.5 px-4 text-right">On Hand</th>
-                <th className="py-3.5 px-4 text-right">Reserved</th>
-                <th className="py-3.5 px-4 text-right">Available</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4 text-center">Action</th>
+                <th className="py-2.5 px-4">Product Name</th>
+                <th className="py-2.5 px-4">SKU</th>
+                <th className="py-2.5 px-4">Warehouse</th>
+                <th className="py-2.5 px-4">Bin / Location</th>
+                <th className="py-2.5 px-4 text-right">On Hand</th>
+                <th className="py-2.5 px-4 text-right">Reserved</th>
+                <th className="py-2.5 px-4 text-right">Available</th>
+                <th className="py-2.5 px-4">Status</th>
+                <th className="py-2.5 px-4 text-right">Updated</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/50">
+            <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-12 text-slate-400">
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                      <span>Loading real-time stock balances...</span>
-                    </div>
+                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                    <LoadingState message="Calculating real-time inventory balances..." />
                   </td>
                 </tr>
               ) : filteredItems.length > 0 ? (
                 filteredItems.map((item) => {
                   const status = getItemStatus(item);
                   return (
-                    <tr key={item.id} className="hover:bg-slate-700/30 transition-colors">
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-slate-100">{item.product_name}</div>
-                        <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500 font-mono">
-                          <span>SKU: {item.sku}</span>
-                          <span>•</span>
-                          <span className="text-slate-400">{item.unit || 'pcs'}</span>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <div className="text-slate-300 font-medium">{item.warehouse_name || 'Warehouse'}</div>
-                        <div className="text-xs text-slate-500">
-                          {item.location_name} {item.location_code ? `(${item.location_code})` : ''}
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-mono font-bold text-white">
-                        {item.quantity}
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-mono text-slate-400">
-                        {item.reserved_quantity}
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-mono font-semibold text-emerald-400">
-                        {item.free_to_use}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                            status === 'In Stock'
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                              : status === 'Low Stock'
-                              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                              : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
-                          }`}
-                        >
-                          {status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
+                    <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-2.5 px-4">
                         <Link
                           to={`/products/${item.product_id}`}
-                          className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
+                          className="font-medium text-slate-900 hover:text-blue-600 transition-colors"
                         >
-                          View Product
+                          {item.product_name}
                         </Link>
+                      </td>
+                      <td className="py-2.5 px-4 font-mono text-xs text-blue-600 whitespace-nowrap">
+                        {item.sku}
+                      </td>
+                      <td className="py-2.5 px-4 text-xs text-slate-600 whitespace-nowrap">
+                        {item.warehouse_name || 'Warehouse'}
+                      </td>
+                      <td className="py-2.5 px-4 text-xs text-slate-600 whitespace-nowrap">
+                        <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-[11px] border border-slate-200">
+                          {item.location_name} {item.location_code ? `(${item.location_code})` : ''}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-4 text-right font-mono text-xs font-bold text-slate-900 whitespace-nowrap">
+                        {item.quantity} <span className="text-[10px] text-slate-400 font-normal">{item.unit || 'pcs'}</span>
+                      </td>
+                      <td className="py-2.5 px-4 text-right font-mono text-xs text-slate-500 whitespace-nowrap">
+                        {item.reserved_quantity}
+                      </td>
+                      <td className="py-2.5 px-4 text-right font-mono text-xs font-semibold text-blue-600 whitespace-nowrap">
+                        {item.free_to_use}
+                      </td>
+                      <td className="py-2.5 px-4 whitespace-nowrap">
+                        <Badge size="sm">{status}</Badge>
+                      </td>
+                      <td className="py-2.5 px-4 text-right text-[11px] text-slate-400 whitespace-nowrap">
+                        {item.updated_at ? new Date(item.updated_at).toLocaleDateString() : '—'}
                       </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={7} className="text-center py-10 text-slate-500 text-sm">
-                    No stock inventory found. Receive or adjust stock to initialize balances.
+                  <td colSpan={9} className="p-8">
+                    <EmptyState
+                      title="No stock records found"
+                      description="No inventory matches the selected criteria. Post a goods receipt to initialize balances."
+                    />
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex items-center justify-between">
+          <span>
+            Total entries: <strong className="text-slate-800">{filteredItems.length}</strong>
+          </span>
+          <span className="text-[11px] text-slate-400">All locations synced</span>
         </div>
       </div>
     </div>

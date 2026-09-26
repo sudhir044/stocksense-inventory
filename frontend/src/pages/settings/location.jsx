@@ -7,351 +7,299 @@ import {
   Filter,
   Warehouse,
   Boxes,
-  Layers,
-  Edit2,
-  Trash2,
-  ArrowUpDown,
-  CheckCircle2,
-  AlertCircle,
-  Tag,
+  X,
+  Save,
 } from 'lucide-react';
+import { Button } from '../../components/ui/Button';
+import { Badge } from '../../components/ui/Badge';
+import { PageHeader } from '../../components/ui/PageHeader';
 
-const Locations = () => {
+export const Locations = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [warehouseFilter, setWarehouseFilter] = useState('ALL');
-  const [typeFilter, setTypeFilter] = useState('ALL');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Sample locations list data
   const [locations, setLocations] = useState([
     {
       id: 'LOC-001',
       name: 'Aisle 1 - Rack A (Top)',
       code: 'WH-A-A1-RA',
-      warehouse: 'Main Central Hub (WH-A)',
+      warehouse: 'Main Central Hub',
       type: 'Pallet Rack',
       maxCapacity: 100,
       occupiedUnits: 72,
       productsCount: 4,
-      status: 'Active',
+      status: 'active',
     },
     {
       id: 'LOC-002',
       name: 'Aisle 1 - Rack B (Middle)',
       code: 'WH-A-A1-RB',
-      warehouse: 'Main Central Hub (WH-A)',
+      warehouse: 'Main Central Hub',
       type: 'Pallet Rack',
       maxCapacity: 100,
       occupiedUnits: 98,
       productsCount: 6,
-      status: 'Near Full',
+      status: 'active',
     },
     {
       id: 'LOC-003',
       name: 'Bin Section C-04',
-      code: 'WH-A-SEC-C04',
-      warehouse: 'Main Central Hub (WH-A)',
+      code: 'WH-B-BIN-04',
+      warehouse: 'Secondary Hub Dallas',
       type: 'Small Parts Bin',
       maxCapacity: 50,
       occupiedUnits: 15,
       productsCount: 2,
-      status: 'Active',
+      status: 'active',
     },
     {
       id: 'LOC-004',
-      name: 'Cold Zone Shelf 2',
-      code: 'WH-B-CZ-S2',
-      warehouse: 'Secondary Hub Dallas (WH-B)',
-      type: 'Cold Storage',
-      maxCapacity: 40,
-      occupiedUnits: 38,
-      productsCount: 3,
-      status: 'Near Full',
-    },
-    {
-      id: 'LOC-005',
-      name: 'Floor Staging Bay 3',
-      code: 'WH-B-FL-03',
-      warehouse: 'Secondary Hub Dallas (WH-B)',
-      type: 'Floor Bulk',
-      maxCapacity: 250,
+      name: 'Bay 2 Receiving Dock',
+      code: 'WH-A-RCV-02',
+      warehouse: 'Main Central Hub',
+      type: 'Staging Bay',
+      maxCapacity: 200,
       occupiedUnits: 45,
-      productsCount: 1,
-      status: 'Active',
-    },
-    {
-      id: 'LOC-006',
-      name: 'Receiving Dock Quarantine',
-      code: 'WH-C-QA-01',
-      warehouse: 'West Coast Depository (WH-C)',
-      type: 'Quarantine Bay',
-      maxCapacity: 60,
-      occupiedUnits: 0,
-      productsCount: 0,
-      status: 'Empty',
+      productsCount: 12,
+      status: 'active',
     },
   ]);
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this storage location?')) {
-      setLocations((prev) => prev.filter((loc) => loc.id !== id));
-    }
+  const [formData, setFormData] = useState({
+    name: '',
+    code: '',
+    warehouse: 'Main Central Hub',
+    type: 'Pallet Rack',
+    maxCapacity: 100,
+  });
+
+  const handleAddLocation = (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.code) return;
+    const newLoc = {
+      id: `LOC-00${locations.length + 1}`,
+      name: formData.name,
+      code: formData.code.toUpperCase(),
+      warehouse: formData.warehouse,
+      type: formData.type,
+      maxCapacity: Number(formData.maxCapacity) || 100,
+      occupiedUnits: 0,
+      productsCount: 0,
+      status: 'active',
+    };
+    setLocations([...locations, newLoc]);
+    setIsModalOpen(false);
+    setFormData({ name: '', code: '', warehouse: 'Main Central Hub', type: 'Pallet Rack', maxCapacity: 100 });
   };
 
-  // Filter calculations
-  const filteredLocations = locations.filter((loc) => {
+  const filtered = locations.filter((l) => {
+    const term = searchTerm.toLowerCase();
     const matchesSearch =
-      loc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      loc.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      loc.type.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesWarehouse =
-      warehouseFilter === 'ALL' || loc.warehouse === warehouseFilter;
-
-    const matchesType = typeFilter === 'ALL' || loc.type === typeFilter;
-
-    return matchesSearch && matchesWarehouse && matchesType;
+      l.name.toLowerCase().includes(term) ||
+      l.code.toLowerCase().includes(term) ||
+      l.warehouse.toLowerCase().includes(term);
+    const matchesWarehouse = warehouseFilter === 'ALL' || l.warehouse === warehouseFilter;
+    return matchesSearch && matchesWarehouse;
   });
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 sm:p-6 lg:p-8">
-      {/* Header & Primary Actions */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
-            Warehouse Locations & Bins
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Configure aisles, racks, cold storage zones, and specific storage bins across all facilities.
-          </p>
-        </div>
-
-        <div className="flex items-center space-x-3">
-          <Link
-            to="/settings/locations/create"
-            className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors"
+    <div className="space-y-6">
+      <PageHeader
+        title="Warehouse Locations"
+        subtitle="Manage bin numbers, storage zones, pallet racks, and receiving bays."
+        breadcrumbs={[
+          { label: 'Settings', path: '/settings' },
+          { label: 'Locations' },
+        ]}
+        action={
+          <Button
+            variant="primary"
+            size="sm"
+            icon={Plus}
+            onClick={() => setIsModalOpen(true)}
           >
-            <Plus className="w-4 h-4 mr-2" />
             Add Location
-          </Link>
-        </div>
-      </div>
+          </Button>
+        }
+      />
 
-      {/* KPI Overview Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-5 shadow-lg flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Total Storage Locations
-            </div>
-            <div className="text-2xl font-bold text-white mt-1">
-              {locations.length} Locations
-            </div>
-          </div>
-          <div className="p-3 bg-indigo-500/10 rounded-lg text-indigo-400 border border-indigo-500/20">
-            <MapPin className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-5 shadow-lg flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Total Occupied Units
-            </div>
-            <div className="text-2xl font-bold text-emerald-400 mt-1">
-              {locations.reduce((acc, curr) => acc + curr.occupiedUnits, 0)} Units
-            </div>
-          </div>
-          <div className="p-3 bg-emerald-500/10 rounded-lg text-emerald-400 border border-emerald-500/20">
-            <Boxes className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-5 shadow-lg flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              High Capacity Bins (≥ 80%)
-            </div>
-            <div className="text-2xl font-bold text-amber-400 mt-1">
-              {
-                locations.filter(
-                  (loc) => (loc.occupiedUnits / loc.maxCapacity) >= 0.8
-                ).length
-              }{' '}
-              Bins
-            </div>
-          </div>
-          <div className="p-3 bg-amber-500/10 rounded-lg text-amber-400 border border-amber-500/20">
-            <Layers className="w-6 h-6" />
-          </div>
-        </div>
-      </div>
-
-      {/* Filter and Search Bar */}
-      <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-4 mb-6 shadow-lg flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full md:w-96">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+      {/* Search & Filter Toolbar */}
+      <div className="bg-white border border-slate-200 rounded-[8px] p-3 shadow-2xs flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="relative w-full sm:w-80">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search location name, code, or aisle..."
+            placeholder="Search location code, name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-9 pr-3.5 py-1.5 text-sm bg-white border border-slate-200 rounded-[6px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          {/* Warehouse Filter */}
-          <div className="flex items-center space-x-2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5">
-            <Warehouse className="w-4 h-4 text-slate-400" />
-            <select
-              value={warehouseFilter}
-              onChange={(e) => setWarehouseFilter(e.target.value)}
-              className="bg-transparent text-sm text-slate-200 focus:outline-none cursor-pointer"
-            >
-              <option value="ALL" className="bg-slate-900">All Warehouses</option>
-              <option value="Main Central Hub (WH-A)" className="bg-slate-900">
-                Main Central Hub (WH-A)
-              </option>
-              <option value="Secondary Hub Dallas (WH-B)" className="bg-slate-900">
-                Secondary Hub Dallas (WH-B)
-              </option>
-              <option value="West Coast Depository (WH-C)" className="bg-slate-900">
-                West Coast Depository (WH-C)
-              </option>
-            </select>
-          </div>
-
-          {/* Type Filter */}
-          <div className="flex items-center space-x-2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5">
-            <Filter className="w-4 h-4 text-slate-400" />
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="bg-transparent text-sm text-slate-200 focus:outline-none cursor-pointer"
-            >
-              <option value="ALL" className="bg-slate-900">All Types</option>
-              <option value="Pallet Rack" className="bg-slate-900">Pallet Rack</option>
-              <option value="Small Parts Bin" className="bg-slate-900">Small Parts Bin</option>
-              <option value="Cold Storage" className="bg-slate-900">Cold Storage</option>
-              <option value="Floor Bulk" className="bg-slate-900">Floor Bulk</option>
-              <option value="Quarantine Bay" className="bg-slate-900">Quarantine Bay</option>
-            </select>
-          </div>
+        <div className="flex items-center space-x-2 w-full sm:w-auto">
+          <Filter className="w-3.5 h-3.5 text-slate-400" />
+          <span className="text-xs font-semibold text-slate-500">Warehouse:</span>
+          <select
+            value={warehouseFilter}
+            onChange={(e) => setWarehouseFilter(e.target.value)}
+            className="text-xs font-medium bg-white border border-slate-200 rounded-[6px] px-2.5 py-1.5 text-slate-800 focus:outline-none focus:border-blue-600 cursor-pointer"
+          >
+            <option value="ALL">All Warehouses</option>
+            <option value="Main Central Hub">Main Central Hub</option>
+            <option value="Secondary Hub Dallas">Secondary Hub Dallas</option>
+          </select>
         </div>
       </div>
 
       {/* Locations Table */}
-      <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-[8px] overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-900/80 text-xs uppercase text-slate-400 border-b border-slate-700">
+          <table className="w-full text-left text-sm text-slate-700">
+            <thead className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
               <tr>
-                <th className="py-3.5 px-4">Location & Code</th>
-                <th className="py-3.5 px-4">Warehouse Facility</th>
-                <th className="py-3.5 px-4">Type</th>
-                <th className="py-3.5 px-4 text-center">SKU Count</th>
-                <th className="py-3.5 px-4">Capacity Utilization</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4 text-center">Actions</th>
+                <th className="py-2.5 px-4">Location Code</th>
+                <th className="py-2.5 px-4">Name / Shelf</th>
+                <th className="py-2.5 px-4">Facility / Warehouse</th>
+                <th className="py-2.5 px-4">Storage Type</th>
+                <th className="py-2.5 px-4 text-right">Capacity Usage</th>
+                <th className="py-2.5 px-4">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/50">
-              {filteredLocations.length > 0 ? (
-                filteredLocations.map((loc) => {
-                  const percent = Math.round((loc.occupiedUnits / loc.maxCapacity) * 100);
-                  return (
-                    <tr key={loc.id} className="hover:bg-slate-700/30 transition-colors">
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-slate-100">{loc.name}</div>
-                        <div className="font-mono text-xs text-indigo-400 mt-0.5">
-                          {loc.code}
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-300">
+            <tbody className="divide-y divide-slate-100">
+              {filtered.map((loc) => {
+                const pct = Math.round((loc.occupiedUnits / loc.maxCapacity) * 100);
+                return (
+                  <tr key={loc.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 font-mono text-xs font-semibold text-blue-600">
+                      {loc.code}
+                    </td>
+                    <td className="py-3 px-4 font-semibold text-slate-900">
+                      {loc.name}
+                    </td>
+                    <td className="py-3 px-4 text-xs text-slate-600">
+                      <div className="flex items-center gap-1">
+                        <Warehouse className="w-3.5 h-3.5 text-slate-400" />
                         {loc.warehouse}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300">
-                          {loc.type}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-center font-mono font-medium">
-                        {loc.productsCount} SKUs
-                      </td>
-                      <td className="py-3.5 px-4 w-56">
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="text-slate-400 font-mono">
-                            {loc.occupiedUnits} / {loc.maxCapacity} units
-                          </span>
-                          <span
-                            className={`font-semibold ${
-                              percent >= 90
-                                ? 'text-rose-400'
-                                : percent >= 75
-                                ? 'text-amber-400'
-                                : 'text-emerald-400'
-                            }`}
-                          >
-                            {percent}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-700">
-                          <div
-                            className={`h-full rounded-full transition-all duration-300 ${
-                              percent >= 90
-                                ? 'bg-rose-500'
-                                : percent >= 75
-                                ? 'bg-amber-500'
-                                : 'bg-indigo-500'
-                            }`}
-                            style={{ width: `${percent}%` }}
-                          />
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                            loc.status === 'Active'
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : loc.status === 'Near Full'
-                              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                              : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
-                          }`}
-                        >
-                          {loc.status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <div className="flex items-center justify-center space-x-1">
-                          <button
-                            className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-700 rounded-lg transition-colors"
-                            title="Edit Location"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(loc.id)}
-                            className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-slate-700 rounded-lg transition-colors"
-                            title="Delete Location"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={7} className="text-center py-8 text-slate-500 text-sm">
-                    No warehouse locations found matching your filter criteria.
-                  </td>
-                </tr>
-              )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-xs text-slate-600">
+                      {loc.type}
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="text-xs font-mono font-semibold text-slate-900">
+                        {loc.occupiedUnits} / {loc.maxCapacity} ({pct}%)
+                      </div>
+                      <div className="w-20 bg-slate-100 h-1.5 rounded-full ml-auto mt-1 overflow-hidden">
+                        <div
+                          className="bg-blue-600 h-1.5 rounded-full"
+                          style={{ width: `${Math.min(pct, 100)}%` }}
+                        />
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <Badge variant="ready" size="sm">
+                        Active
+                      </Badge>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-[8px] max-w-md w-full p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900">Add Storage Location</h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddLocation} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Location Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Aisle 3 - Pallet Rack 4"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-[6px] text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Location Code *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. WH-A-A3-R4"
+                  value={formData.code}
+                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                  className="w-full px-3 py-2 text-sm font-mono bg-white border border-slate-200 rounded-[6px] text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Warehouse
+                </label>
+                <select
+                  value={formData.warehouse}
+                  onChange={(e) => setFormData({ ...formData, warehouse: e.target.value })}
+                  className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-[6px] text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                >
+                  <option value="Main Central Hub">Main Central Hub</option>
+                  <option value="Secondary Hub Dallas">Secondary Hub Dallas</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Storage Type
+                </label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-[6px] text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                >
+                  <option value="Pallet Rack">Pallet Rack</option>
+                  <option value="Small Parts Bin">Small Parts Bin</option>
+                  <option value="Staging Bay">Staging Bay</option>
+                  <option value="Cold Storage Zone">Cold Storage Zone</option>
+                </select>
+              </div>
+
+              <div className="pt-2 flex justify-end space-x-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary" size="sm" icon={Save}>
+                  Save Location
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -52,6 +52,9 @@ import Products from './pages/products/products';
 import CreateProduct from './pages/products/createProduct';
 import ProductDetails from './pages/products/productDetails';
 
+// Profile
+import Profile from './pages/profile/profile';
+
 function App() {
   return (
     <AuthProvider>
@@ -318,6 +321,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <ProductDetails />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Profile */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

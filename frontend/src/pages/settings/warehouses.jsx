@@ -5,23 +5,20 @@ import {
   MapPin,
   Plus,
   Search,
-  Building,
-  Layers,
-  Edit2,
-  Trash2,
-  CheckCircle,
-  AlertCircle,
-  X,
   Phone,
   User,
+  X,
+  Save,
+  CheckCircle2,
 } from 'lucide-react';
+import { Button } from '../../components/ui/Button';
+import { Badge } from '../../components/ui/Badge';
+import { PageHeader } from '../../components/ui/PageHeader';
 
-const Warehouses = () => {
+export const Warehouses = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingWarehouse, setEditingWarehouse] = useState(null);
 
-  // Warehouse list state
   const [warehouses, setWarehouses] = useState([
     {
       id: 'WH-01',
@@ -34,7 +31,7 @@ const Warehouses = () => {
       usedCapacity: 34500,
       totalLocations: 24,
       totalProducts: 480,
-      status: 'Active',
+      status: 'active',
     },
     {
       id: 'WH-02',
@@ -47,7 +44,7 @@ const Warehouses = () => {
       usedCapacity: 21500,
       totalLocations: 12,
       totalProducts: 210,
-      status: 'Active',
+      status: 'active',
     },
     {
       id: 'WH-03',
@@ -59,429 +56,214 @@ const Warehouses = () => {
       totalCapacity: 35000,
       usedCapacity: 8400,
       totalLocations: 18,
-      totalProducts: 95,
-      status: 'Active',
-    },
-    {
-      id: 'WH-04',
-      name: 'East Coast Reserve',
-      code: 'WH-D',
-      address: '15 Meadowlands Way, Newark, NJ 07102',
-      manager: 'Sara Jenkins',
-      phone: '+1 (973) 555-0112',
-      totalCapacity: 20000,
-      usedCapacity: 0,
-      totalLocations: 8,
-      totalProducts: 0,
-      status: 'Inactive',
+      totalProducts: 145,
+      status: 'active',
     },
   ]);
 
-  // Form state for creating / editing warehouse
   const [formData, setFormData] = useState({
     name: '',
     code: '',
     address: '',
     manager: '',
     phone: '',
-    totalCapacity: '',
+    totalCapacity: 20000,
   });
 
-  const handleOpenModal = (wh = null) => {
-    if (wh) {
-      setEditingWarehouse(wh);
-      setFormData({
-        name: wh.name,
-        code: wh.code,
-        address: wh.address,
-        manager: wh.manager,
-        phone: wh.phone,
-        totalCapacity: wh.totalCapacity,
-      });
-    } else {
-      setEditingWarehouse(null);
-      setFormData({
-        name: '',
-        code: '',
-        address: '',
-        manager: '',
-        phone: '',
-        totalCapacity: '',
-      });
-    }
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingWarehouse(null);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
+  const handleAddWarehouse = (e) => {
     e.preventDefault();
-    if (editingWarehouse) {
-      // Update existing warehouse
-      setWarehouses((prev) =>
-        prev.map((wh) =>
-          wh.id === editingWarehouse.id
-            ? {
-                ...wh,
-                ...formData,
-                totalCapacity: Number(formData.totalCapacity),
-              }
-            : wh
-        )
-      );
-    } else {
-      // Create new warehouse
-      const newWh = {
-        id: `WH-0${warehouses.length + 1}`,
-        name: formData.name,
-        code: formData.code.toUpperCase(),
-        address: formData.address,
-        manager: formData.manager,
-        phone: formData.phone,
-        totalCapacity: Number(formData.totalCapacity) || 10000,
-        usedCapacity: 0,
-        totalLocations: 0,
-        totalProducts: 0,
-        status: 'Active',
-      };
-      setWarehouses((prev) => [newWh, ...prev]);
-    }
-    handleCloseModal();
+    if (!formData.name || !formData.code) return;
+    const newWh = {
+      id: `WH-0${warehouses.length + 1}`,
+      name: formData.name,
+      code: formData.code.toUpperCase(),
+      address: formData.address || 'Standard Logistics Depot',
+      manager: formData.manager || 'Site Lead',
+      phone: formData.phone || '+1 555-0100',
+      totalCapacity: Number(formData.totalCapacity) || 10000,
+      usedCapacity: 0,
+      totalLocations: 4,
+      totalProducts: 0,
+      status: 'active',
+    };
+    setWarehouses([...warehouses, newWh]);
+    setIsModalOpen(false);
+    setFormData({ name: '', code: '', address: '', manager: '', phone: '', totalCapacity: 20000 });
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this warehouse?')) {
-      setWarehouses((prev) => prev.filter((wh) => wh.id !== id));
-    }
-  };
-
-  // Filtered warehouses
-  const filteredWarehouses = warehouses.filter((wh) =>
-    wh.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    wh.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    wh.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    wh.manager.toLowerCase().includes(searchTerm.toLowerCase())
+  const filtered = warehouses.filter((w) =>
+    w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    w.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    w.address.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 sm:p-6 lg:p-8">
-      {/* Header and Title */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
-            Warehouses
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Manage physical warehouses, storage hubs, assigned managers, and volumetric capacity.
-          </p>
-        </div>
-
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => handleOpenModal()}
-            className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors"
+    <div className="space-y-6">
+      <PageHeader
+        title="Warehouses & Facilities"
+        subtitle="Manage logistics depots, fulfillment centers, and storage capacity limits."
+        breadcrumbs={[
+          { label: 'Settings', path: '/settings' },
+          { label: 'Warehouses' },
+        ]}
+        action={
+          <Button
+            variant="primary"
+            size="sm"
+            icon={Plus}
+            onClick={() => setIsModalOpen(true)}
           >
-            <Plus className="w-4 h-4 mr-2" />
             Add Warehouse
-          </button>
-        </div>
-      </div>
+          </Button>
+        }
+      />
 
-      {/* KPI Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-5 shadow-lg flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Total Facilities
-            </div>
-            <div className="text-2xl font-bold text-white mt-1">{warehouses.length} Active Nodes</div>
-          </div>
-          <div className="p-3 bg-indigo-500/10 rounded-lg text-indigo-400 border border-indigo-500/20">
-            <Building className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-5 shadow-lg flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Total Locations / Bins
-            </div>
-            <div className="text-2xl font-bold text-emerald-400 mt-1">
-              {warehouses.reduce((acc, curr) => acc + curr.totalLocations, 0)} Bins
-            </div>
-          </div>
-          <div className="p-3 bg-emerald-500/10 rounded-lg text-emerald-400 border border-emerald-500/20">
-            <Layers className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-5 shadow-lg flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Average Space Utilization
-            </div>
-            <div className="text-2xl font-bold text-amber-400 mt-1">
-              {Math.round(
-                (warehouses.reduce((acc, curr) => acc + curr.usedCapacity, 0) /
-                  warehouses.reduce((acc, curr) => acc + curr.totalCapacity, 0)) *
-                  100
-              )}
-              %
-            </div>
-          </div>
-          <div className="p-3 bg-amber-500/10 rounded-lg text-amber-400 border border-amber-500/20">
-            <WarehouseIcon className="w-6 h-6" />
-          </div>
-        </div>
-      </div>
-
-      {/* Search Input */}
-      <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-4 mb-6 shadow-lg">
-        <div className="relative w-full md:w-96">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+      {/* Search Toolbar */}
+      <div className="bg-white border border-slate-200 rounded-[8px] p-3 shadow-2xs flex items-center justify-between">
+        <div className="relative w-full sm:w-80">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search warehouse name, code, city, or manager..."
+            placeholder="Search warehouse code, name, city..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-9 pr-3.5 py-1.5 text-sm bg-white border border-slate-200 rounded-[6px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
           />
+        </div>
+
+        <div className="text-xs text-slate-500">
+          Total: <strong className="text-slate-900">{filtered.length}</strong> facilities
         </div>
       </div>
 
-      {/* Warehouse Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredWarehouses.map((wh) => {
-          const usagePercent = Math.round((wh.usedCapacity / wh.totalCapacity) * 100) || 0;
-          return (
-            <div
-              key={wh.id}
-              className="bg-slate-800/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-6 shadow-lg flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl">
-                      <WarehouseIcon className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <h3 className="text-lg font-bold text-white">{wh.name}</h3>
-                        <span className="font-mono text-xs px-2 py-0.5 rounded bg-slate-900 text-indigo-400 border border-slate-700">
-                          {wh.code}
-                        </span>
+
+      <div className="bg-white border border-slate-200 rounded-[8px] overflow-hidden shadow-2xs">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-slate-700">
+            <thead className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+              <tr>
+                <th className="py-2.5 px-4">Code</th>
+                <th className="py-2.5 px-4">Facility Name & Address</th>
+                <th className="py-2.5 px-4">Manager Contact</th>
+                <th className="py-2.5 px-4 text-right">Capacity Usage</th>
+                <th className="py-2.5 px-4 text-center">Locations</th>
+                <th className="py-2.5 px-4">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filtered.map((wh) => {
+                const pct = Math.round((wh.usedCapacity / wh.totalCapacity) * 100);
+                return (
+                  <tr key={wh.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 font-mono text-xs font-semibold text-blue-600">
+                      {wh.code}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="font-semibold text-slate-900">{wh.name}</div>
+                      <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                        <MapPin className="w-3 h-3 text-slate-400" />
+                        {wh.address}
                       </div>
-                      <span
-                        className={`inline-block mt-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                          wh.status === 'Active'
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                            : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                        }`}
-                      >
-                        {wh.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center space-x-1">
-                    <button
-                      onClick={() => handleOpenModal(wh)}
-                      className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-700 rounded-lg transition-colors"
-                      title="Edit Warehouse"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(wh.id)}
-                      className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-slate-700 rounded-lg transition-colors"
-                      title="Delete Warehouse"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Details Section */}
-                <div className="mt-5 space-y-2 text-sm text-slate-400">
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="w-4 h-4 text-slate-500 flex-shrink-0" />
-                    <span>{wh.address}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <User className="w-4 h-4 text-slate-500 flex-shrink-0" />
-                    <span>Manager: {wh.manager}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Phone className="w-4 h-4 text-slate-500 flex-shrink-0" />
-                    <span>{wh.phone}</span>
-                  </div>
-                </div>
-
-                {/* Capacity Progress Bar */}
-                <div className="mt-6">
-                  <div className="flex justify-between text-xs mb-1.5">
-                    <span className="text-slate-400 font-medium">Space Capacity Utilized</span>
-                    <span className="text-white font-semibold">{usagePercent}% ({wh.usedCapacity.toLocaleString()} / {wh.totalCapacity.toLocaleString()} sq ft)</span>
-                  </div>
-                  <div className="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-700">
-                    <div
-                      className={`h-full rounded-full transition-all duration-300 ${
-                        usagePercent > 80 ? 'bg-amber-500' : 'bg-indigo-500'
-                      }`}
-                      style={{ width: `${usagePercent}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Quick Links */}
-              <div className="mt-6 pt-4 border-t border-slate-700/60 flex items-center justify-between text-xs">
-                <span className="text-slate-400">
-                  <strong className="text-slate-200">{wh.totalLocations}</strong> Storage Bins
-                  <span className="mx-2 text-slate-600">•</span>
-                  <strong className="text-slate-200">{wh.totalProducts}</strong> Items
-                </span>
-                <Link
-                  to={`/stock?warehouse=${wh.code}`}
-                  className="text-indigo-400 hover:text-indigo-300 font-semibold"
-                >
-                  View Stock →
-                </Link>
-              </div>
-            </div>
-          );
-        })}
+                    </td>
+                    <td className="py-3 px-4 text-xs text-slate-600">
+                      <div className="font-medium text-slate-900">{wh.manager}</div>
+                      <div className="text-slate-400 text-[11px]">{wh.phone}</div>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="text-xs font-mono font-semibold text-slate-900">
+                        {wh.usedCapacity.toLocaleString()} / {wh.totalCapacity.toLocaleString()} ({pct}%)
+                      </div>
+                      <div className="w-24 bg-slate-100 h-1.5 rounded-full ml-auto mt-1 overflow-hidden">
+                        <div
+                          className="bg-blue-600 h-1.5 rounded-full"
+                          style={{ width: `${Math.min(pct, 100)}%` }}
+                        />
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-center font-mono text-xs font-semibold text-slate-700">
+                      {wh.totalLocations} bays
+                    </td>
+                    <td className="py-3 px-4">
+                      <Badge variant="ready" size="sm">
+                        Active
+                      </Badge>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Add / Edit Warehouse Modal */}
+      {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-700">
-              <h2 className="text-lg font-bold text-white">
-                {editingWarehouse ? 'Edit Warehouse' : 'Add New Warehouse'}
-              </h2>
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-[8px] max-w-md w-full p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900">Add Warehouse Facility</h3>
               <button
-                onClick={handleCloseModal}
-                className="text-slate-400 hover:text-slate-200"
+                onClick={() => setIsModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Warehouse Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    required
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="e.g. Central Depot"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Warehouse Code
-                  </label>
-                  <input
-                    type="text"
-                    name="code"
-                    required
-                    value={formData.code}
-                    onChange={handleInputChange}
-                    placeholder="e.g. WH-E"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase"
-                  />
-                </div>
-              </div>
-
+            <form onSubmit={handleAddWarehouse} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Full Street Address
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Warehouse Name *
                 </label>
                 <input
                   type="text"
-                  name="address"
                   required
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  placeholder="Street address, City, State, ZIP"
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="e.g. Northeast Regional Depot"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-[6px] text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Facility Manager
-                  </label>
-                  <input
-                    type="text"
-                    name="manager"
-                    value={formData.manager}
-                    onChange={handleInputChange}
-                    placeholder="e.g. Jane Doe"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Contact Phone
-                  </label>
-                  <input
-                    type="text"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    placeholder="+1 (555) 000-0000"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Total Floor Capacity (sq ft)
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Facility Code *
                 </label>
                 <input
-                  type="number"
-                  name="totalCapacity"
-                  value={formData.totalCapacity}
-                  onChange={handleInputChange}
-                  placeholder="e.g. 30000"
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  type="text"
+                  required
+                  placeholder="e.g. WH-D"
+                  value={formData.code}
+                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                  className="w-full px-3 py-2 text-sm font-mono bg-white border border-slate-200 rounded-[6px] text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 />
               </div>
 
-              <div className="flex justify-end space-x-3 pt-4 border-t border-slate-700">
-                <button
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Physical Address
+                </label>
+                <input
+                  type="text"
+                  placeholder="123 Logistics Way, City, State"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-[6px] text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end space-x-2">
+                <Button
                   type="button"
-                  onClick={handleCloseModal}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-medium rounded-lg transition-colors"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setIsModalOpen(false)}
                 >
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
-                >
-                  {editingWarehouse ? 'Update Warehouse' : 'Save Warehouse'}
-                </button>
+                </Button>
+                <Button type="submit" variant="primary" size="sm" icon={Save}>
+                  Save Warehouse
+                </Button>
               </div>
             </form>
           </div>

@@ -8,13 +8,17 @@ import {
   Layers,
   DollarSign,
   Box,
-  Activity,
   Calendar,
-  AlertCircle,
+  ShieldCheck,
 } from 'lucide-react';
 import productService from '../../services/product.service';
+import { Button } from '../../components/ui/Button';
+import { Card, CardHeader } from '../../components/ui/Card';
+import { Badge } from '../../components/ui/Badge';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { ErrorAlert, LoadingState } from '../../components/ui/Feedback';
 
-const ProductDetails = () => {
+export const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
@@ -30,8 +34,8 @@ const ProductDetails = () => {
         const data = await productService.getProductById(id);
         setProduct(data);
       } catch (err) {
-        console.error('Failed to fetch product details:', err);
-        setError(err.response?.data?.message || 'Product not found');
+        console.error('Failed to fetch product:', err);
+        setError(err.response?.data?.message || 'Product record not found');
       } finally {
         setLoading(false);
       }
@@ -44,7 +48,7 @@ const ProductDetails = () => {
 
   const handleDelete = async () => {
     if (!product) return;
-    if (window.confirm(`Are you sure you want to deactivate ${product.name}?`)) {
+    if (window.confirm(`Are you sure you want to deactivate SKU ${product.sku}?`)) {
       try {
         setDeleting(true);
         await productService.deactivateProduct(product.id);
@@ -65,37 +69,18 @@ const ProductDetails = () => {
     return 'In Stock';
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'In Stock':
-        return 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20';
-      case 'Low Stock':
-        return 'text-amber-400 bg-amber-400/10 border-amber-400/20';
-      case 'Out of Stock':
-        return 'text-red-400 bg-red-400/10 border-red-400/20';
-      default:
-        return 'text-slate-400 bg-slate-400/10 border-slate-400/20';
-    }
-  };
-
   if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex justify-center items-center">
-        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingState message="Loading product record..." />;
   }
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-slate-900 text-slate-100 p-8 flex flex-col items-center justify-center space-y-4">
-        <AlertCircle className="w-12 h-12 text-rose-500" />
-        <h2 className="text-xl font-bold">{error || 'Product Not Found'}</h2>
-        <Link
-          to="/products"
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
-        >
-          Back to Products
+      <div className="space-y-4">
+        <ErrorAlert message={error || 'Product not found'} />
+        <Link to="/products">
+          <Button variant="secondary" size="sm" icon={ArrowLeft}>
+            Back to Products Catalog
+          </Button>
         </Link>
       </div>
     );
@@ -104,151 +89,130 @@ const ProductDetails = () => {
   const status = getStatus(product);
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-6 lg:p-8">
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center space-x-4">
-            <Link
-              to="/products"
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
+    <div className="space-y-6">
+      <PageHeader
+        title={product.name}
+        subtitle={`SKU: ${product.sku}`}
+        breadcrumbs={[
+          { label: 'Products', to: '/products' },
+          { label: product.sku },
+        ]}
+        action={
+          <div className="flex items-center space-x-2.5">
+            <Link to="/products">
+              <Button variant="secondary" size="sm" icon={ArrowLeft}>
+                Back
+              </Button>
             </Link>
+            <Button
+              variant="danger"
+              size="sm"
+              icon={Trash2}
+              loading={deleting}
+              onClick={handleDelete}
+            >
+              Deactivate SKU
+            </Button>
+          </div>
+        }
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left 2 Columns: Main Information */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+              <div className="flex items-center space-x-3">
+                <div className="w-9 h-9 rounded-[6px] bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                  <Package className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">{product.name}</h3>
+                  <span className="text-xs font-mono text-slate-500 font-semibold">{product.sku}</span>
+                </div>
+              </div>
+              <Badge>{status}</Badge>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+              <div className="p-3 bg-slate-50 rounded-[6px] border border-slate-200">
+                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                  Category
+                </span>
+                <span className="text-sm font-medium text-slate-900 mt-1 block">
+                  {product.category_name || 'Unassigned'}
+                </span>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-[6px] border border-slate-200">
+                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                  Unit of Measure
+                </span>
+                <span className="text-sm font-medium text-slate-900 mt-1 block">
+                  {product.unit || 'pcs'}
+                </span>
+              </div>
+            </div>
+
             <div>
-              <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                Product Details
-              </h1>
-              <p className="mt-1 text-sm text-slate-400">
-                View information and inventory status for {product.sku}
+              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">
+                Technical Specifications & Notes
+              </span>
+              <p className="text-sm text-slate-700 bg-slate-50 p-4 rounded-[6px] border border-slate-200 leading-relaxed min-h-[80px]">
+                {product.description || 'No description entered for this product item.'}
               </p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center py-2 px-4 border border-red-500/20 rounded-lg shadow-sm text-sm font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-all duration-200 disabled:opacity-50"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              {deleting ? 'Deactivating...' : 'Deactivate Product'}
-            </button>
-          </div>
+          </Card>
         </div>
 
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Info Card */}
-          <div className="lg:col-span-2 bg-slate-800/80 backdrop-blur-md p-6 sm:p-8 shadow-xl border border-slate-700/50 rounded-2xl space-y-6">
-            <div className="flex items-center gap-3 pb-4 border-b border-slate-700/50">
-              <div className="bg-indigo-500/20 p-3 rounded-xl border border-indigo-500/30">
-                <Package className="h-6 w-6 text-indigo-400" />
+        {/* Right Column: Inventory Summary & Metadata */}
+        <div className="space-y-6">
+          <Card>
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-3 border-b border-slate-100 mb-4">
+              Inventory Balance
+            </h3>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-2.5 bg-slate-50 rounded-[6px] border border-slate-200">
+                <span className="text-xs text-slate-500">Unit Cost</span>
+                <span className="text-base font-bold font-mono text-slate-900">
+                  ${Number(product.cost_price || 0).toFixed(2)}
+                </span>
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-white">{product.name}</h2>
-                <span
-                  className={`mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
-                    status
-                  )}`}
-                >
-                  {status}
+
+              <div className="flex items-center justify-between p-2.5 bg-slate-50 rounded-[6px] border border-slate-200">
+                <span className="text-xs text-slate-500">Total Stock</span>
+                <span className="text-base font-bold font-mono text-blue-600">
+                  {product.total_stock ?? 0} {product.unit || 'pcs'}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 bg-slate-50 rounded-[6px] border border-slate-200">
+                <span className="text-xs text-slate-500">Reorder Safety Level</span>
+                <span className="text-sm font-medium font-mono text-amber-700">
+                  {product.reorder_level || 0} {product.unit || 'pcs'}
                 </span>
               </div>
             </div>
+          </Card>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <span className="flex items-center text-sm font-medium text-slate-400 mb-1">
-                  <Hash className="mr-2 h-4 w-4" /> SKU
+          <Card>
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-3 border-b border-slate-100 mb-3">
+              System Audit
+            </h3>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between py-1 border-b border-slate-100">
+                <span className="text-slate-500">Registered</span>
+                <span className="text-slate-800 font-medium">
+                  {product.created_at ? new Date(product.created_at).toLocaleDateString() : '—'}
                 </span>
-                <p className="text-base text-slate-100 font-mono bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-                  {product.sku}
-                </p>
               </div>
-
-              <div>
-                <span className="flex items-center text-sm font-medium text-slate-400 mb-1">
-                  <Layers className="mr-2 h-4 w-4" /> Category
-                </span>
-                <p className="text-base text-slate-100 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-                  {product.category_name || 'Uncategorized'}
-                </p>
+              <div className="flex justify-between py-1">
+                <span className="text-slate-500">Account Status</span>
+                <Badge size="sm">{product.is_active ? 'Active' : 'Deactivated'}</Badge>
               </div>
             </div>
-
-            <div>
-              <span className="block text-sm font-medium text-slate-400 mb-2">Description</span>
-              <p className="text-sm text-slate-300 bg-slate-900/50 p-4 rounded-lg border border-slate-700/50 leading-relaxed min-h-[60px]">
-                {product.description || 'No description provided.'}
-              </p>
-            </div>
-          </div>
-
-          {/* Sidebar Cards */}
-          <div className="space-y-6">
-            {/* Inventory & Pricing Card */}
-            <div className="bg-slate-800/80 backdrop-blur-md p-6 shadow-xl border border-slate-700/50 rounded-2xl space-y-6">
-              <h3 className="text-lg font-semibold text-white flex items-center">
-                <Activity className="mr-2 h-5 w-5 text-indigo-400" />
-                Inventory Summary
-              </h3>
-
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                  <span className="flex items-center text-sm text-slate-400">
-                    <DollarSign className="mr-2 h-4 w-4" /> Cost Price
-                  </span>
-                  <span className="text-lg font-bold text-white font-mono">
-                    ${Number(product.cost_price ?? 0).toFixed(2)}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                  <span className="flex items-center text-sm text-slate-400">
-                    <Box className="mr-2 h-4 w-4" /> Total Stock
-                  </span>
-                  <span className="text-lg font-bold text-white font-mono">
-                    {product.total_stock ?? 0} {product.unit || 'pcs'}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                  <span className="flex items-center text-sm text-slate-400">
-                    Reorder Level
-                  </span>
-                  <span className="text-sm font-medium text-amber-400 font-mono">
-                    {product.reorder_level ?? 0} {product.unit || 'pcs'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Metadata Card */}
-            <div className="bg-slate-800/80 backdrop-blur-md p-6 shadow-xl border border-slate-700/50 rounded-2xl space-y-4">
-              <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
-                System Data
-              </h3>
-
-              <div className="flex justify-between items-center">
-                <span className="flex items-center text-sm text-slate-400">
-                  <Calendar className="mr-2 h-4 w-4" /> Added
-                </span>
-                <span className="text-sm text-slate-200">
-                  {product.created_at ? new Date(product.created_at).toLocaleDateString() : 'N/A'}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center pt-3 border-t border-slate-700/50">
-                <span className="flex items-center text-sm text-slate-400">
-                  <Activity className="mr-2 h-4 w-4" /> Status
-                </span>
-                <span className="text-sm text-emerald-400 font-medium">
-                  {product.is_active ? 'Active' : 'Deactivated'}
-                </span>
-              </div>
-            </div>
-          </div>
+          </Card>
         </div>
       </div>
     </div>
